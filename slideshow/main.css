@@ -1,0 +1,28 @@
+body {
+  /* background-image: url('imgs/knuckle.png'); */
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+#caption {
+  display: none;
+  position: fixed;
+  top: 20%;
+  left: 5%;
+  z-index: 5;
+  width: 80%;
+  border-radius: 30px;
+  padding: 20px;
+  color: white;
+  background-color: black;
+  opacity: 0.6;
+  font-size: 100px;
+  text-align: center;
+}
+
+#word {
+  font-size: 1.2em;
+}
+#definition {
+  font-size: 0.4em;
+}
