@@ -4,5 +4,3 @@
 **/*.wav
 **/*.png
 node_modules
-svl/movie/**/*.png
-**/imgs/*
