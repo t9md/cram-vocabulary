@@ -1,0 +1,32 @@
+{
+  "name": "cram-vocabulary",
+  "version": "1.0.0",
+  "description": "cram vocab",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "babel-eslint": "^10.0.1",
+    "prettier": "^1.16.4",
+    "standard": "^12.0.1"
+  },
+  "standard": {
+    "parser": "babel-eslint",
+    "globals": [],
+    "ignore": [
+      "spec/fixtures/*"
+    ]
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/t9md/cram-vocabulary.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/t9md/cram-vocabulary/issues"
+  },
+  "homepage": "https://github.com/t9md/cram-vocabulary#readme"
+}

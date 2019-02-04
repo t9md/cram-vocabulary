@@ -18,7 +18,6 @@ def save_snapshot(driver, word, idx):
         else:
             os.remove(fname)
 
-    # driver.get('https://www.google.com/search?tbm=isch&q=' + word)
     time.sleep(1)
     driver.get('https://www.google.com/search?gl=us&hl=en&pws=0&gws_rd=cr&tbm=isch&q=' + word)
     element = driver.find_element_by_id("res")
@@ -39,7 +38,7 @@ def retrieve_snapshot_for_words(driver, words):
 
 def main():
     files = sys.argv[1:]
-    
+
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
     driver = webdriver.Chrome(options=options)
@@ -47,7 +46,7 @@ def main():
     driver.set_window_size(1280, 720)
     print driver.get_window_size()
     # raw_input("Start: ")
-    
+
     for file in files:
         print file, ': start'
         retrieve_snapshot_for_words(driver, get_words_from_file(file))

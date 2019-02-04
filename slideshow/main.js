@@ -1,207 +1,284 @@
-let currentIndex = -1
-let currentCard = {}
-let wordList = []
-let definitionVisible = false
-
-const initialVisibilityState = {
-  word: true,
-  definition: false,
-  caption: false,
-}
-let currentCardVisibilityState = {}
-
-function setCardAtIndex(index) {
-  currentCard = wordList[index]
-  document.getElementById('word').innerText = currentCard.word
-  document.getElementById('definition').innerText = currentCard.definition
-  document.body.style.backgroundImage = `url('imgs/${currentCard.word}.png')`
-  Object.assign(currentCardVisibilityState, initialVisibilityState)
-  updateFieldVisibility(currentCardVisibilityState)
+function getValidIndex (index, list) {
+  return Math.min(Math.max(index, 0), list.length - 1)
 }
 
-function setCard(where) {
-  switch (where) {
-    case 'next':
-      currentIndex = ++currentIndex % wordList.length
-      break
-    case 'previous':
-      --currentIndex
-      if (currentIndex < 0) {
-        currentIndex = wordList.length - 1
+function styleForId (id) {
+  return document.getElementById(id).style
+}
+
+function escapeHtml (html) {
+  const text = document.createTextNode(html)
+  const p = document.createElement('p')
+  p.appendChild(text)
+  return p.innerHTML
+}
+
+class App {
+  constructor () {
+    this.index = -1
+    this.wordList = null
+    this.defaultVisible = {
+      word: true,
+      definition: false,
+      caption: false
+    }
+    this.currentVisible = {}
+    this.removeHistory = []
+  }
+
+  setWordList (wordList, filename) {
+    this.wordList = wordList
+    this.wordListFilename = filename
+    this.renderActiveWordList()
+  }
+
+  getCardIndexFor (where) {
+    switch (where) {
+      case 'next':
+        return getValidIndex(this.index + 1, this.wordList)
+      case 'previous':
+        return getValidIndex(this.index - 1, this.wordList)
+      case 'refresh':
+        return getValidIndex(this.index, this.wordList)
+      case 'top':
+        return 0
+      case 'end':
+        return getValidIndex(Infinity, this.wordList)
+    }
+  }
+
+  setCard (where) {
+    if (!this.wordList.length) return
+    this.index = this.getCardIndexFor(where)
+
+    const { word, definition = '' } = this.wordList[this.index]
+    document.getElementById('word').innerText = word
+    document.getElementById('definition').innerText = definition.replace(/<br>/g, '\n')
+    document.body.style.backgroundImage = `url('imgs/${word}.png')`
+
+    Object.assign(this.currentVisible, this.defaultVisible)
+    this.updateFieldVisibility(this.currentVisible)
+  }
+
+  toggleCaption () {
+    this.defaultVisible.caption = !this.defaultVisible.caption
+    this.updateFieldVisibility({ caption: this.defaultVisible.caption })
+  }
+
+  updateFieldVisibility (state) {
+    for (const field of Object.keys(state)) {
+      const style = styleForId(field)
+      const value = state[field]
+      if (field === 'caption') {
+        style.display = value ? 'none' : 'block'
+      } else {
+        style.visibility = value ? '' : 'hidden'
       }
-      break
-    case 'top':
-      currentIndex = 0
-      break
-    case 'end':
-      currentIndex = wordList.length - 1
-      break
-    default:
+    }
   }
-  setCardAtIndex(currentIndex)
-}
 
-function captionIsVisible() {
-  const element = document.getElementById('caption')
-  return element.style.display !== 'none'
-}
+  toggleShowField (field) {
+    this.defaultVisible[field] = !this.defaultVisible[field]
+    this.updateFieldVisibility(this.defaultVisible)
+  }
 
-function toggleCaption() {
-  initialVisibilityState.caption = !initialVisibilityState.caption
-  updateFieldVisibility({caption: initialVisibilityState.caption})
-}
+  next () {
+    const captionStyle = styleForId('caption')
+    if (captionStyle.display === 'none') {
+      captionStyle.display = 'block'
+      return
+    }
+    if (styleForId('word').visibility === 'hidden' || styleForId('definition').visibility === 'hidden') {
+      this.updateFieldVisibility({ word: true, definition: true })
+      return
+    }
+    if (this.index < this.wordList.length - 1) {
+      this.setCard('next')
+    }
+  }
 
-function resetFieldVisiblity() {
-  document.getElementById('definition').style.visibility = definitionVisible ? '' : 'hidden'
-  document.getElementById('meaning').style.visibility = meaningVisible ? '' : 'hidden'
-}
+  getRemovedWordList () {
+    return this.removeHistory.map(e => e.item)
+  }
 
-function updateFieldVisibility(state) {
-  for (const field of Object.keys(state)) {
-    const {style} = document.getElementById(field)
-    const value = state[field]
-    if (field === 'caption') {
-      style.display = value ? 'none' : 'block'
+  getBlobForActiveWordList () {
+    const content = this.wordList.map(e => `${e.word}\t${e.definition}`).join('\n') + '\n'
+    return new Blob([content], { type: 'text/plain' })
+  }
+
+  getBlobForRemovedWordList () {
+    const content = this.getRemovedWordList.map(e => `${e.word}\t${e.definition}`).join('\n') + '\n'
+    return new Blob([content], { type: 'text/plain' })
+  }
+
+  deleteCurrentWord () {
+    if (this.wordList.length) {
+      const removed = this.wordList.splice(this.index, 1)[0]
+      const operation = { item: removed, index: this.index }
+      this.removeHistory.push(operation)
+      this.refreshAfterWordListMutation()
+    }
+  }
+
+  refreshAfterWordListMutation () {
+    this.setCard('refresh')
+    this.renderActiveWordList()
+    this.renderRemovedWordList()
+  }
+
+  undoDeletion () {
+    if (this.removeHistory.length) {
+      const { item, index } = this.removeHistory.pop()
+      this.wordList.splice(index, 0, item)
+      this.index = index
+      console.log(this.wordList)
+      this.refreshAfterWordListMutation()
+    }
+  }
+
+  showHelp () {
+    console.log('HELOP!')
+    const container = document.getElementById('help')
+    console.log(container.style.display)
+    if (container.style.display !== 'none') {
+      container.style.display = 'none'
     } else {
-      style.visibility = value ? '' : 'hidden'
+      container.style.display = 'block'
     }
   }
-}
 
-function toggleShowDefinition(field) {
-  const value = initialVisibilityState[field]
-  initialVisibilityState[field] = !value
-  updateFieldVisibility(initialVisibilityState)
-}
-
-function next() {
-  if (!captionIsVisible()) {
-    document.getElementById('caption').style.display = 'block'
-    return
+  renderWordList (targetId, wordList = []) {
+    const container = document.getElementById(targetId)
+    container.value = wordList.map(e => e.word + '\t' + e.definition).join('\n') + '\n'
   }
-  const wordVisibility = document.getElementById('word').style.visibility
-  const definitionVisibility = document.getElementById('definition').style.visibility
-  if (wordVisibility === 'hidden' || definitionVisibility === 'hidden') {
-    updateFieldVisibility({word: true, definition: true})
-    return
+
+  renderActiveWordList () {
+    this.renderWordList('active-word-list', this.wordList)
   }
-  setCard('next')
+  renderRemovedWordList () {
+    this.renderWordList('removed-word-list', this.getRemovedWordList())
+  }
 }
 
-function init() {
-  // const body = document.body
-  // document.addEventListener('click', () => {
-  //   next()
-  // }, false)
-  // body.addEventListener('click', () => {
-  //   console.log("CLICKED!");
-  // }, false)
+const Commands = {
+  'play-or-stop-audio': () => playOrStopAudio(),
+  'audio-forward-5s': () => setAudioTimeWithDelta(+5),
+  'audio-rewind-5s': () => setAudioTimeWithDelta(-5),
+  'audio-rate-up': () => changeAudioSpeed('>'),
+  'audio-rate-down': () => changeAudioSpeed('<'),
+  'first-card': () => app.setCard('top'),
+  'toggle-word': () => app.toggleShowField('word'),
+  'toggle-definition': () => app.toggleShowField('definition'),
+  'next-card': () => app.setCard('next'),
+  'previous-card': () => app.setCard('previous'),
+  next: () => app.next(),
+  'toggle-caption': () => app.toggleCaption(),
+  'delete-current-word': () => app.deleteCurrentWord(),
+  'undo-deletion': () => app.undoDeletion(),
+  'show-help': () => app.showHelp()
+}
 
-  document.body.addEventListener(
-    'click',
-    () => {
-      if (wordList.length) next()
-    },
-    false
-  )
-  document.body.addEventListener('keydown', event => {
-    // playOrStopAudio
-    console.log({
-      key: event.key,
-      code: event.code,
-      keyCode: event.keyCode,
-    })
-    switch (event.key) {
-      case ' ':
-        event.preventDefault()
-        event.stopPropagation()
-        playOrStopAudio()
-        break
-      case '>':
-        changeAudioSpeed('>')
-        break
-      case '<':
-        changeAudioSpeed('<')
-        break
-      case '0':
-        setCard('top')
-        break
-      case '1':
-        toggleShowDefinition('word')
-        break
-      case '2':
-        toggleShowDefinition('definition')
-        break
-      case 'ArrowDown':
-      case 'j':
-        setCard('next')
-        break
-      case 'ArrowUp':
-      case 'k':
-        setCard('previous')
-        break
-      case 'ArrowRight':
-        next()
-        break
-      case 'ArrowLeft':
-        break
-      case 't':
-        toggleCaption()
-        break
-      case 'n':
-        next()
-        break
-      case 's':
-        console.log(wordList)
-        break
-      default:
+const Keymap = {
+  '0': 'first-card',
+  ArrowUp: 'previous-card',
+  ArrowDown: 'next-card',
+  ArrowRight: 'next',
+  k: 'previous-card',
+  j: 'next-card',
+  n: 'next',
+  '1': 'toggle-word',
+  '2': 'toggle-definition',
+  '-': 'delete-current-word',
+  t: 'toggle-caption',
+  u: 'undo-deletion',
+  '?': 'show-help'
+  // p: 'play-or-stop-audio',
+  // b: 'audio-rewind-5s',
+  // f: 'audio-forward-5s',
+  // d: 'download-word-list',
+  // '>': 'audio-rate-up',
+  // '<': 'audio-rate-down',
+}
+
+const app = new App()
+function init () {
+  const handleBodyClick = event => {
+    if (event.target !== document.body) return
+    if (app.wordList) app.next()
+  }
+  document.body.addEventListener('click', handleBodyClick, 'false')
+
+  const handleKeydown = event => {
+    if (event.key in Keymap) {
+      event.preventDefault()
+      event.stopPropagation()
+      const command = Keymap[event.key]
+      Commands[command](event)
     }
-  })
+  }
+  document.body.addEventListener('keydown', handleKeydown)
 
-  // readLocalFile('files/anki-svl-12.txt', loadFileData)
-
-  element = document.getElementById('setfile')
-  element.addEventListener(
-    'change',
-    event => {
-      const {files} = event.target
+  const handleFile = event => {
+    const element = event.target
+    const file = element.files[0]
+    if (file) {
       const reader = new FileReader()
-      reader.onload = event => loadFileData(reader.result)
-      reader.readAsText(files[0])
-      element.remove()
-    },
-    false
-  )
-}
-
-// function readLocalFile(path, callback) {
-//   const xhr = new XMLHttpRequest()
-//   xhr.open('GET', path, true)
-//   xhr.responseType = 'blob'
-//   xhr.onload = function(e) {
-//     if (this.status == 200) {
-//       const fileReader = new FileReader()
-//       fileReader.onload = d => callback(fileReader.result)
-//       fileReader.readAsText(new File([this.response], 'temp'))
-//     }
-//   }
-//   xhr.send()
-// }
-
-function loadFileData(data) {
-  for (const line of data.split('\n')) {
-    let [word, definition] = line.split('\t')
-    if (definition) {
-      wordList.push({
-        word: word,
-        definition: definition.replace(/<br>/g, '\n'),
-      })
+      reader.onload = event => {
+        const list = []
+        for (const line of reader.result.split('\n')) {
+          let [word, definition] = line.split('\t')
+          if (word && definition) {
+            list.push({ word: word, definition: definition })
+          }
+        }
+        app.setWordList(list, file.name)
+        app.setCard('next')
+      }
+      reader.readAsText(file)
+      element.remove() // disappear!
     }
-    setCard('next')
+  }
+  document.getElementById('setfile').addEventListener('change', handleFile, false)
+
+  {
+    const handleDoubleClick = event => {
+      const element = event.target
+      event.stopPropagation()
+      const index = element.value.substr(0, element.selectionStart).split('\n').length - 1
+      if (index > 0) {
+        app.index = index
+        app.setCard('refresh')
+      }
+    }
+    const container = document.getElementById('active-words-container')
+    container.style.marginTop = window.screen.height + 'px'
+    container.addEventListener('dblclick', handleDoubleClick)
+  }
+  {
+    const container = document.getElementById('help')
+    container.style.display = 'none'
+    const items = []
+    for (const key of Object.keys(Keymap)) {
+      const displayKey = key.replace(/Arrow(Up|Down|Right|Left)$/, '$1').toLowerCase()
+      items.push('<li>' + escapeHtml(displayKey + ':  ' + Keymap[key]) + '</li>')
+    }
+    container.innerHTML = '<ul>' + items.join('\n') + '</ul>'
+  }
+  {
+    function downloadWordList (event) {
+      const element = event.target
+      const kind = element.id.replace('download-', '')
+      const content = element.parentElement.nextElementSibling.value
+      const blob = new Blob([content], { type: 'text/plain' })
+      element.download = kind + '-' + app.wordListFilename
+      element.href = window.URL.createObjectURL(blob)
+    }
+    document.getElementById('download-active').addEventListener('click', downloadWordList)
+    document.getElementById('download-removed').addEventListener('click', downloadWordList)
   }
 }
 
-function playOrStopAudio(event) {
+function playOrStopAudio (event) {
   const audio = document.getElementById('sound')
   if (audio.paused) {
     audio.play()
@@ -212,14 +289,18 @@ function playOrStopAudio(event) {
 
 const audioSpeeds = [0.5, 0.8, 1.0, 1.1, 1.2, 1.3]
 
-function changeAudioSpeed(which) {
+function setAudioTimeWithDelta (delta) {
+  const audio = document.getElementById('sound')
+  audio.currentTime = audio.currentTime + delta
+}
+
+function changeAudioSpeed (which) {
   const audio = document.getElementById('sound')
   let index = audioSpeeds.indexOf(audio.playbackRate)
-  if (which === ">") {
-    index = Math.min(index + 1, audioSpeeds.length - 1)
+  if (which === '>') {
+    index = getValidIndex(index + 1, audioSpeeds)
   } else {
-    index = Math.max(index - 1, 0)
+    index = getValidIndex(index - 1, audioSpeeds)
   }
   audio.playbackRate = audioSpeeds[index]
-  console.log('audio speed', audio.playbackRate);
 }

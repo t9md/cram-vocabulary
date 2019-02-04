@@ -11,6 +11,26 @@ body {
   margin: 0px;
 }
 
+a {
+  text-decoration: none;
+}
+a:link,
+a:visited {
+  color: black;
+}
+a:hover {
+  color: black;
+}
+
+.square_btn {
+  display: inline-block;
+  padding: 0.2em 0.5em;
+  text-decoration: none;
+  color: black;
+  border: dashed 1px black;
+  border-radius: 2px;
+}
+
 #caption {
   display: none;
   position: fixed;
@@ -25,6 +45,31 @@ body {
   opacity: 0.6;
   font-size: 100px;
   text-align: center;
+}
+
+#help {
+  font-family: Consolas, 'Courier New', Courier, Monaco, monospace;
+  position: fixed;
+  top: 5%;
+  right: 3%;
+  z-index: 10;
+  border-radius: 5px;
+  padding-left: 0.2em;
+  padding-right: 2em;
+  color: white;
+  background-color: black;
+  opacity: 0.6;
+  font-size: 20px;
+}
+
+#active-word-list {
+  width: 80%;
+  height: 300px;
+}
+
+#removed-word-list {
+  width: 80%;
+  height: 300px;
 }
 
 #word {

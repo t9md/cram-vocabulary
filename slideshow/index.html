@@ -7,11 +7,21 @@
   <title>cram-vocabulary</title>
 </head>
 <body onload="init();">
+  <!-- <audio id="sound" preload="auto" src="music/svl-en_ja_en--svl-12.mp3" autoplay controls></audio> -->
+  <input type="file" id="setfile"><br>
+  <div id="help"></div>
   <div id="caption">
     <div id="word" class="noselect"></div>
     <div id="definition" class="noselect"></div>
   </div>
-  <audio id="sound" src="music/svl-en_ja_en--svl-12.mp3" autoplay></audio>
-  <input type="file" id="setfile">
+  <div id='active-words-container'>
+    <div>Active words. <a id="download-active" href="#">[Download]</a></div>
+    <textarea readonly id='active-word-list'></textarea>
+  </div>
+  <div readonly id='removed-words-container'>
+    <div>Removed words. <a id="download-removed" href="#">[Download]</a></div>
+    <textarea readonly id='removed-word-list'></textarea>
+  </div>
+  <div id='removed-word-list'></div>
 </body>
 </html>
