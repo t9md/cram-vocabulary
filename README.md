@@ -130,3 +130,9 @@ Options:
     - このプロキシは以下の事をやっている。
     - Chrome ブラウザから直接 `dict://{word}` を開けないので、`http` にしている
     - 検索後 Dictionary.app にフォーカスが取られるが、それを Chrome に戻す。
+
+# CHANGES
+
+- v2.0: `search-image-now` コマンド追加。 `s` にキーマップ
+- v1.1: スタイルをちょっと変更
+- v1.0: 最初の公開

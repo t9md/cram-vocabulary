@@ -26,6 +26,10 @@ a:hover {
   text-align: center;
 }
 
+#image-search {
+  display: none;
+}
+
 .caption-item {
   color: white;
   background-color: black;

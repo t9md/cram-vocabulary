@@ -12,6 +12,7 @@ const Keymap = {
   ArrowUp: 'previous-card',
   ArrowDown: 'next-card',
   ArrowRight: 'next',
+  // ArrowLeft: 'delete-current-word',
   k: 'previous-card',
   j: 'next-card',
   n: 'next',
@@ -21,6 +22,7 @@ const Keymap = {
   t: 'toggle-caption',
   u: 'undo-deletion',
   Enter: 'next',
+  s: 'search-image-now',
   // Backspace: 'delete-current-word',
   '?': 'show-help'
 }

@@ -188,6 +188,15 @@ class App {
   renderRemovedWordList () {
     this.renderWordList('removed-words', this.getRemovedWordList())
   }
+
+  searchImageNow () {
+    const word = this.wordList[this.index]
+    if (word && word.word) {
+      const a = document.getElementById('image-search')
+      a.href = 'https://www.google.com/search?gl=us&hl=en&pws=0&gws_rd=cr&tbm=isch&q=' + word.word
+      a.click()
+    }
+  }
 }
 
 const Commands = {
@@ -205,6 +214,7 @@ const Commands = {
   'toggle-caption': () => app.toggleCaption(),
   'delete-current-word': () => app.deleteCurrentWord(),
   'undo-deletion': () => app.undoDeletion(),
+  'search-image-now': () => app.searchImageNow(),
   'show-help': () => app.showHelp()
 }
 
