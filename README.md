@@ -14,9 +14,14 @@ Intensive な詰め込みを加速させることがを意図しており、Anki
 2. その単語リストを `bach-image-retrieve.py` に渡して、単語のイメージを画像検索し、スクリーンキャプチャを集める。
 3. そして `slideshow/index.html` を開き、単語リストを開くと、画像を見ながら単語学習ができる！
 
+## 環境
+
+- Mac の Chrome ブラウザで使うことを想定している
+- もしかしたら Windows でも動くかも知れないが確認していない。
+
 ## 前準備
 
-- [Chrome driver](http://chromedriver.chromium.org/downloads) をダウンロードして、 PATH の通ったとこ(`/usr/local/bin` とか)に置く。
+- Chrome Browser を自動操縦するためのドライバ [Chrome driver](http://chromedriver.chromium.org/downloads) をダウンロードして、 PATH の通ったとこ(`/usr/local/bin` とか)に置く。
 Shell から `chromedriver -h` と打って、help が出たらOK
 
 - python selenium ライブラリ の install
