@@ -5,9 +5,20 @@ import os
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 import time
+import errno
+from optparse import OptionParser
+
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc:  # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise
 
 def save_snapshot(driver, word, idx):
-    fname = 'slideshow/imgs/%s.png' % word
+    fname = os.path.join(Options.dir, "%s.png" % word)
     idx = "%03d" % (idx + 1)
 
     if os.path.isfile(fname):
@@ -38,18 +49,30 @@ def retrieve_snapshot_for_words(driver, words):
     for idx, word in enumerate(words):
         save_snapshot(driver, word, idx)
 
+Options = {}
+
 def main():
-    files = sys.argv[1:]
+    global Options
 
-    options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
-    driver = webdriver.Chrome(options=options)
+    usage = "usage: %prog [options] word-list"
+    parser = OptionParser(usage=usage)
+    parser.add_option("-d", "--dir", dest="dir", help="Directory to write captured images.", default="slideshow/imgs")
+    parser.add_option("-w", "--window", dest="window", help="Window size. 1280x720 by default.", default="1280x720")
+    (Options, args) = parser.parse_args()
 
-    driver.set_window_size(1280, 720)
-    print driver.get_window_size()
-    # raw_input("Start: ")
 
-    for file in files:
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument('--headless')
+    driver = webdriver.Chrome(chrome_options=chrome_options)
+
+    (screen_width, screen_height) = Options.window.split("x")
+    driver.set_window_size(screen_width, screen_height)
+    print 'window size', driver.get_window_size()
+    print 'output dir', Options.dir
+
+    mkdir_p(Options.dir)
+
+    for file in args:
         print file, ': start'
         retrieve_snapshot_for_words(driver, get_words_from_file(file))
     driver.quit()

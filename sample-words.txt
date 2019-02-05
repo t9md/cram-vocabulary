@@ -1,2 +1,4 @@
 apple	りんご
 orange	オレンジ
+sad	悲しい
+happy	楽しい

@@ -1,6 +1,5 @@
-let WORD_LIST = ""
-const DEV_MODE = true
-const DEV_DATA = `
+let WORD_LIST = ''
+_WORD_LIST = `
 accede	【自】（地位・職に）就く、継承する、加盟する、同意する、応じる<br>
 artifice	【名】巧みな策略、術策、ぺてん<br>
 abate	【他】…を和らげる、…を減ずる、…を無効にする、…を却下する<br>【自】和らぐ、収まる<br>
@@ -64,24 +63,20 @@ class App {
   }
 
   getCardIndexFor (where) {
-    switch (where) {
-      case 'next':
-        return getValidIndex(this.index + 1, this.wordList)
-      case 'previous':
-        return getValidIndex(this.index - 1, this.wordList)
-      case 'refresh':
-        return getValidIndex(this.index, this.wordList)
-      case 'top':
-        return 0
-      case 'end':
-        return getValidIndex(Infinity, this.wordList)
-    }
+    if (where === 'top') return 0
+
+    let delta
+    if (where === 'end') delta = Infinity
+    else if (where === 'next') delta = 1
+    else if (where === 'previous') delta = -1
+    else if (where === 'refresh') delta = 0
+
+    return getValidIndex(this.index + delta, this.wordList)
   }
 
   setCard (where) {
     if (!this.wordList.length) return
     this.index = this.getCardIndexFor(where)
-
     const { word, definition = '' } = this.wordList[this.index]
     document.getElementById('word').innerText = word
     document.getElementById('definition').innerText = definition.replace(/<br>/g, '\n')
@@ -169,7 +164,6 @@ class App {
       const { item, index } = this.removeHistory.pop()
       this.wordList.splice(index, 0, item)
       this.index = index
-      console.log(this.wordList)
       this.refreshAfterWordListMutation()
     }
   }
@@ -242,27 +236,41 @@ function init () {
         list.push({ word: word, definition: definition })
       }
     }
+
+    document.getElementById('file-area').remove()
     app.setWordList(list, filename)
     app.setCard('next')
   }
 
-  if (DEV_MODE) {
-    loadWordList(DEV_DATA, 'dev-words')
-  } else if (WORD_LIST) {
-    loadWordList(WORD_LIST, 'static-words')
-  }
-
-  const handleFile = event => {
-    const element = event.target
-    const file = element.files[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = event => loadWordList(reader.result, file.name)
-      reader.readAsText(file)
-      element.remove() // disappear!
+  // Handle drop file
+  {
+    // copy&modified from https://stackoverflow.com/questions/8006715/drag-drop-files-into-standard-html-file-input
+    const element = document.getElementById('filedrop')
+    const cancelDefault = event => event.preventDefault()
+    element.ondragover = cancelDefault
+    element.ondragenter = cancelDefault
+    element.ondrop = event => {
+      fileinput.files = event.dataTransfer.files
+      event.preventDefault()
     }
   }
-  document.getElementById('setfile').addEventListener('change', handleFile, false)
+
+  {
+    const handleFile = event => {
+      const element = event.target
+      const file = element.files[0]
+      if (file) {
+        const reader = new FileReader()
+        reader.onload = event => loadWordList(reader.result, file.name)
+        reader.readAsText(file)
+      }
+    }
+    document.getElementById('fileinput').addEventListener('change', handleFile, false)
+  }
+
+  if (WORD_LIST) {
+    loadWordList(WORD_LIST, 'static-words')
+  }
 
   {
     const handleDoubleClick = event => {
@@ -274,9 +282,8 @@ function init () {
         app.setCard('refresh')
       }
     }
-    const container = document.getElementById('words-container')
-    container.style.top = window.screen.height + 'px'
-    container.addEventListener('dblclick', handleDoubleClick)
+    styleForId('words-container').top = window.screen.height + 'px'
+    document.getElementById('active-words').addEventListener('dblclick', handleDoubleClick)
   }
   {
     const container = document.getElementById('help')

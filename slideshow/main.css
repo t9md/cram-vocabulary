@@ -45,6 +45,24 @@ a:hover {
   max-width: 20em;
 }
 
+#file-area {
+  width: 100%;
+  /* text-align: center; */
+}
+
+#filedrop {
+  display: inline-block;
+  margin-left: 5px;
+  width: 98%;
+  border-radius: 10px;
+  font-size: 100px;
+  color: white;
+  text-align: center;
+  height: 400px;
+  line-height: 400px;
+  background: darkgray;
+}
+
 #help {
   z-index: 1;
   position: fixed;
