@@ -39,10 +39,9 @@ class App {
     const { word = '', definition = '' } = this.getCard()
 
     if (!word) {
-      console.log('CALLED!')
       document.getElementById('word').innerText = 'EMPTY!'
       document.getElementById('definition').innerText = 'Sroll down and drop your file.'
-      this.updateFieldVisibility({ word: true, definition: true, caption: true })
+      this.updateFieldVisibility({ word: true, definition: true, caption: true, image: false})
     } else {
       document.getElementById('word').innerText = word
       document.getElementById('definition').innerText = definition.replace(/<br>/g, '\n')
@@ -78,7 +77,7 @@ class App {
     }
   }
 
-  toggleShowField (field) {
+  toggleShow (field) {
     const newValue = !this.defaultVisible[field]
     this.defaultVisible[field] = newValue
     const obj = {}
@@ -122,8 +121,7 @@ class App {
   deleteCurrentWord () {
     if (this.wordList.length) {
       const removed = this.wordList.splice(this.index, 1)[0]
-      const operation = { item: removed, index: this.index }
-      this.removeHistory.push(operation)
+      this.removeHistory.push({ item: removed, index: this.index })
       this.refresh()
     }
   }
@@ -216,10 +214,10 @@ const Commands = {
   'next-card': () => app.setCard('next'),
   'previous-card': () => app.setCard('previous'),
   next: () => app.next(),
-  'toggle-image': () => app.toggleShowField('image'),
-  'toggle-word': () => app.toggleShowField('word'),
-  'toggle-definition': () => app.toggleShowField('definition'),
-  'toggle-caption': () => app.toggleShowField('caption'),
+  'toggle-image': () => app.toggleShow('image'),
+  'toggle-word': () => app.toggleShow('word'),
+  'toggle-definition': () => app.toggleShow('definition'),
+  'toggle-caption': () => app.toggleShow('caption'),
   'delete-current-word': () => app.deleteCurrentWord(),
   'undo-deletion': () => app.undoDeletion(),
   'search-image-now': () => app.searchImageNow(),
@@ -250,7 +248,6 @@ let DefaultKeymap = {
 
 function resetApp () {
   app.setState({})
-  app.refresh()
 }
 
 function loadState () {
@@ -300,7 +297,6 @@ window.onload = () => {
       wordList: list,
       wordListFilename: filename
     })
-    app.refresh()
   }
 
   // Handle drop file
