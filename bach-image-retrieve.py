@@ -11,12 +11,14 @@ def save_snapshot(driver, word, idx):
     idx = "%03d" % (idx + 1)
 
     if os.path.isfile(fname):
-        img_size = os.popen("file %s" % fname).read().strip()
-        if "PNG image data, 2560 x 1440" in img_size:
-            print "  [SKIP] %s: %s exists!" % (idx, fname)
-            return
-        else:
-            os.remove(fname)
+        print "  [SKIP] %s: %s exists!" % (idx, fname)
+        return
+        # img_size = os.popen("file %s" % fname).read().strip()
+        # if "PNG image data, 2560 x 1440" in img_size:
+        #     print "  [SKIP] %s: %s exists!" % (idx, fname)
+        #     return
+        # else:
+        #     os.remove(fname)
 
     time.sleep(1)
     driver.get('https://www.google.com/search?gl=us&hl=en&pws=0&gws_rd=cr&tbm=isch&q=' + word)

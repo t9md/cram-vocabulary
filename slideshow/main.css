@@ -3,10 +3,8 @@ html {
   height: 100%;
 }
 body {
-  /* background-image: url('imgs/knuckle.png'); */
   background-repeat: no-repeat;
   background-size: cover;
-  /* height: 100%; */
   height: 3000px;
   margin: 0px;
 }
@@ -22,37 +20,36 @@ a:hover {
   color: black;
 }
 
-.square_btn {
-  display: inline-block;
-  padding: 0.2em 0.5em;
-  text-decoration: none;
-  color: black;
-  border: dashed 1px black;
-  border-radius: 2px;
-}
-
 #caption {
-  display: none;
-  position: fixed;
-  top: 20%;
-  left: 5%;
-  z-index: 5;
-  width: 80%;
-  border-radius: 30px;
-  padding: 20px;
-  color: white;
-  background-color: black;
-  opacity: 0.6;
-  font-size: 100px;
+  margin-top: 6%;
+  width: 100%;
   text-align: center;
 }
 
+.caption-item {
+  color: white;
+  background-color: black;
+  padding: 0px 10px;
+  opacity: 0.5;
+  border-radius: 10px;
+}
+
+#word {
+  font-size: 120px;
+}
+
+#definition {
+  font-size: 50px;
+  display: inline-block;
+  margin-top: 10px;
+  max-width: 20em;
+}
+
 #help {
-  font-family: Consolas, 'Courier New', Courier, Monaco, monospace;
+  z-index: 1;
   position: fixed;
   top: 5%;
   right: 3%;
-  z-index: 10;
   border-radius: 5px;
   padding-left: 0.2em;
   padding-right: 2em;
@@ -62,21 +59,19 @@ a:hover {
   font-size: 20px;
 }
 
-#active-word-list {
-  width: 80%;
+#words-container {
+  position: absolute;
+  width: 100%;
+}
+
+#active-words {
+  width: 60%;
   height: 300px;
 }
 
-#removed-word-list {
-  width: 80%;
+#removed-words {
+  width: 60%;
   height: 300px;
-}
-
-#word {
-  font-size: 1.2em;
-}
-#definition {
-  font-size: 0.4em;
 }
 
 .noselect {

@@ -1,27 +1,24 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
-<head>
-  <meta charset="utf-8">
-  <link rel="stylesheet" href="main.css">
-  <script src="main.js"></script>
-  <title>cram-vocabulary</title>
-</head>
-<body onload="init();">
-  <!-- <audio id="sound" preload="auto" src="music/svl-en_ja_en--svl-12.mp3" autoplay controls></audio> -->
-  <input type="file" id="setfile"><br>
-  <div id="help"></div>
-  <div id="caption">
-    <div id="word" class="noselect"></div>
-    <div id="definition" class="noselect"></div>
-  </div>
-  <div id='active-words-container'>
-    <div>Active words. <a id="download-active" href="#">[Download]</a></div>
-    <textarea readonly id='active-word-list'></textarea>
-  </div>
-  <div readonly id='removed-words-container'>
-    <div>Removed words. <a id="download-removed" href="#">[Download]</a></div>
-    <textarea readonly id='removed-word-list'></textarea>
-  </div>
-  <div id='removed-word-list'></div>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="main.css" />
+    <script src="main.js"></script>
+    <script src="config.js"></script>
+    <title>cram-vocabulary</title>
+  </head>
+  <body onload="init();">
+    <input type="file" id="setfile" /><br />
+    <div id="help"></div>
+    <div id="caption">
+      <tt class="caption-item" id="word" class="noselect"></tt><br>
+      <div class="caption-item" id="definition" class="noselect"></div>
+    </div>
+    <div readonly id="words-container">
+      <div>Active words. <a id="download-active" href="#">[Download]</a></div>
+      <textarea readonly id="active-words"></textarea>
+      <div>Removed words. <a id="download-removed" href="#">[Download]</a></div>
+      <textarea readonly id="removed-words"></textarea>
+    </div>
+  </body>
 </html>

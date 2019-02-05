@@ -1,3 +1,34 @@
+let WORD_LIST = ""
+const DEV_MODE = true
+const DEV_DATA = `
+accede	【自】（地位・職に）就く、継承する、加盟する、同意する、応じる<br>
+artifice	【名】巧みな策略、術策、ぺてん<br>
+abate	【他】…を和らげる、…を減ずる、…を無効にする、…を却下する<br>【自】和らぐ、収まる<br>
+bile	【名】かんしゃく、不機嫌、胆汁<br>
+sultan	【名】サルタン（イスラム教国の君主）、暴君
+abdicate	【自】退位する、辞任する<br>【他】（王位）を退く、…を放棄する<br>
+lesion	【名】損傷、（機能）障害、病巣<br>
+duchy	【名】公爵領、公国、（英国の）王族公領<br>
+arbitration	【名】仲裁、調停<br>
+allay	【他】…を和らげる、…を静める、（疑惑）を解消する<br>
+hemorrhage	【名】（資金・頭脳などの）国外流出、大出血、損失<br>
+amalgamate	【自】合併する、融合する<br>【他】（会社など）を合併する、…を融合する<br>
+confederation	【名】同盟、連合（国）、連邦<br>
+incursion	【名】（突然の）侵入、襲撃、流入<br>
+beget	【他】（好ましくないもの）を生み出す、…の原因となる、…の父親になる<br>
+iniquity	【名】不法（行為）、悪行、非道<br>
+decorum	【名】礼儀正しさ、上品さ、（decorums で）礼儀作法、礼節<br>
+belie	【他】…と矛盾する、…が偽りであることを示す、（期待など）を裏切る<br>
+quay	【名】埠頭、岸壁、波止場<br>
+billow	【自】（帆・旗などが）膨らむ、はためく、（炎・煙などが）渦巻く、うねる<br>【名】（炎や煙の）うねり、大波
+capricious	【形】気まぐれな、移り気な、不規則な、不安定な<br>
+bode	【他】…の前兆となる、…を予兆する<br>
+auspicious	【形】幸先のよい、めでたい、吉兆の<br>
+subversion	【名】（政府の）転覆、破壊<br>
+cleave	【他】…を切り裂く、（道など）を切り開く、…を分裂させる、…を裂く<br>【自】①割れる、裂ける　②執着する、くっつく<br>
+iris	【名】（眼球の）虹彩、アイリス（アヤメ科の植物）<br>
+`
+
 function getValidIndex (index, list) {
   return Math.min(Math.max(index, 0), list.length - 1)
 }
@@ -58,6 +89,13 @@ class App {
 
     Object.assign(this.currentVisible, this.defaultVisible)
     this.updateFieldVisibility(this.currentVisible)
+
+    if (Config.searchSytemDictionary) {
+      const url = `http://127.0.0.1:8000/${word}`
+      const xhr = new XMLHttpRequest()
+      xhr.open('GET', url, true)
+      xhr.send()
+    }
   }
 
   toggleCaption () {
@@ -137,9 +175,7 @@ class App {
   }
 
   showHelp () {
-    console.log('HELOP!')
     const container = document.getElementById('help')
-    console.log(container.style.display)
     if (container.style.display !== 'none') {
       container.style.display = 'none'
     } else {
@@ -153,10 +189,10 @@ class App {
   }
 
   renderActiveWordList () {
-    this.renderWordList('active-word-list', this.wordList)
+    this.renderWordList('active-words', this.wordList)
   }
   renderRemovedWordList () {
-    this.renderWordList('removed-word-list', this.getRemovedWordList())
+    this.renderWordList('removed-words', this.getRemovedWordList())
   }
 }
 
@@ -178,28 +214,6 @@ const Commands = {
   'show-help': () => app.showHelp()
 }
 
-const Keymap = {
-  '0': 'first-card',
-  ArrowUp: 'previous-card',
-  ArrowDown: 'next-card',
-  ArrowRight: 'next',
-  k: 'previous-card',
-  j: 'next-card',
-  n: 'next',
-  '1': 'toggle-word',
-  '2': 'toggle-definition',
-  '-': 'delete-current-word',
-  t: 'toggle-caption',
-  u: 'undo-deletion',
-  '?': 'show-help'
-  // p: 'play-or-stop-audio',
-  // b: 'audio-rewind-5s',
-  // f: 'audio-forward-5s',
-  // d: 'download-word-list',
-  // '>': 'audio-rate-up',
-  // '<': 'audio-rate-down',
-}
-
 const app = new App()
 function init () {
   const handleBodyClick = event => {
@@ -209,6 +223,7 @@ function init () {
   document.body.addEventListener('click', handleBodyClick, 'false')
 
   const handleKeydown = event => {
+    // console.log(event.key);
     if (event.key in Keymap) {
       event.preventDefault()
       event.stopPropagation()
@@ -218,22 +233,31 @@ function init () {
   }
   document.body.addEventListener('keydown', handleKeydown)
 
+  styleForId('caption').display = 'none'
+  const loadWordList = (text, filename) => {
+    const list = []
+    for (const line of text.split('\n')) {
+      let [word, definition] = line.split('\t')
+      if (word && definition) {
+        list.push({ word: word, definition: definition })
+      }
+    }
+    app.setWordList(list, filename)
+    app.setCard('next')
+  }
+
+  if (DEV_MODE) {
+    loadWordList(DEV_DATA, 'dev-words')
+  } else if (WORD_LIST) {
+    loadWordList(WORD_LIST, 'static-words')
+  }
+
   const handleFile = event => {
     const element = event.target
     const file = element.files[0]
     if (file) {
       const reader = new FileReader()
-      reader.onload = event => {
-        const list = []
-        for (const line of reader.result.split('\n')) {
-          let [word, definition] = line.split('\t')
-          if (word && definition) {
-            list.push({ word: word, definition: definition })
-          }
-        }
-        app.setWordList(list, file.name)
-        app.setCard('next')
-      }
+      reader.onload = event => loadWordList(reader.result, file.name)
       reader.readAsText(file)
       element.remove() // disappear!
     }
@@ -250,8 +274,8 @@ function init () {
         app.setCard('refresh')
       }
     }
-    const container = document.getElementById('active-words-container')
-    container.style.marginTop = window.screen.height + 'px'
+    const container = document.getElementById('words-container')
+    container.style.top = window.screen.height + 'px'
     container.addEventListener('dblclick', handleDoubleClick)
   }
   {
@@ -259,8 +283,8 @@ function init () {
     container.style.display = 'none'
     const items = []
     for (const key of Object.keys(Keymap)) {
-      const displayKey = key.replace(/Arrow(Up|Down|Right|Left)$/, '$1').toLowerCase()
-      items.push('<li>' + escapeHtml(displayKey + ':  ' + Keymap[key]) + '</li>')
+      const keyAndAction = escapeHtml(humanizeKeyName(key) + ':  ' + Keymap[key])
+      items.push(`<li><tt>${keyAndAction}</tt></li>`)
     }
     container.innerHTML = '<ul>' + items.join('\n') + '</ul>'
   }
@@ -276,6 +300,10 @@ function init () {
     document.getElementById('download-active').addEventListener('click', downloadWordList)
     document.getElementById('download-removed').addEventListener('click', downloadWordList)
   }
+}
+
+function humanizeKeyName (name) {
+  return name.replace(/Arrow(Up|Down|Right|Left)$/, '$1').toLowerCase()
 }
 
 function playOrStopAudio (event) {
