@@ -7,22 +7,23 @@
     <script src="config.js"></script>
     <title>cram-vocabulary</title>
   </head>
-  <body onload="init();">
-    <div id='file-area'>
-      <input type="file" id="fileinput" />
-      <div id="filedrop">Drop file here</div><br>
-    </div>
-    <div id="help"></div>
+  <body>
     <div id="caption">
       <tt class="caption-item" id="word" class="noselect"></tt><br>
       <div class="caption-item" id="definition" class="noselect"></div>
     </div>
-    <div readonly id="words-container">
+    <div id="words-container">
       <div>Active words. <a id="download-active" href="#">[Download]</a></div>
       <textarea readonly id="active-words"></textarea>
       <div>Removed words. <a id="download-removed" href="#">[Download]</a></div>
       <textarea readonly id="removed-words"></textarea>
+      <div id='file-area'>
+        <input type="file" id="fileinput" /><br>
+        <div id="filedrop">Drop file here</div><br>
+        <button onclick="resetApp()">Reset App</button>
+      </div>
     </div>
+    <div id="help"></div>
     <a id='image-search' target="_blank"></a>
   </body>
 </html>

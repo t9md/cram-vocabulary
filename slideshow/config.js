@@ -1,7 +1,9 @@
-const Config = {
-  searchSytemDictionary: false // macOS only
-}
+// Configuration
+//===================
+Config.searchSytemDictionary = false // macOS only
 
+// Keymap
+//===================
 // En: The `key` must match with `event.key` of `keydown` event.
 //   You can check it in following link.
 //   https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key#Result
@@ -31,12 +33,3 @@ const Config = {
 // To disable default keymap completely, enable following line.
 // デフォルトキーマップを全て無効にしたければ以下のコメントを外す
 // DeafultKeymap = {}
-
-// En: You can paste static word-list here to skip uploading word-list every time.
-// Ja: 毎回ファイルをアップロードするのが面倒なら、以下をコメントアウトして書き換えればOK。
-//     tab("\t") をスペースに変換しないように注意
-
-// WORD_LIST = `
-// apple	りんご
-// orange	みかん
-// `

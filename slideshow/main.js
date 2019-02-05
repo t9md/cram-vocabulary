@@ -1,35 +1,3 @@
-let WORD_LIST = ''
-let UserKeymap = {}
-
-_WORD_LIST = `
-accede	【自】（地位・職に）就く、継承する、加盟する、同意する、応じる<br>
-artifice	【名】巧みな策略、術策、ぺてん<br>
-abate	【他】…を和らげる、…を減ずる、…を無効にする、…を却下する<br>【自】和らぐ、収まる<br>
-bile	【名】かんしゃく、不機嫌、胆汁<br>
-sultan	【名】サルタン（イスラム教国の君主）、暴君
-abdicate	【自】退位する、辞任する<br>【他】（王位）を退く、…を放棄する<br>
-lesion	【名】損傷、（機能）障害、病巣<br>
-duchy	【名】公爵領、公国、（英国の）王族公領<br>
-arbitration	【名】仲裁、調停<br>
-allay	【他】…を和らげる、…を静める、（疑惑）を解消する<br>
-hemorrhage	【名】（資金・頭脳などの）国外流出、大出血、損失<br>
-amalgamate	【自】合併する、融合する<br>【他】（会社など）を合併する、…を融合する<br>
-confederation	【名】同盟、連合（国）、連邦<br>
-incursion	【名】（突然の）侵入、襲撃、流入<br>
-beget	【他】（好ましくないもの）を生み出す、…の原因となる、…の父親になる<br>
-iniquity	【名】不法（行為）、悪行、非道<br>
-decorum	【名】礼儀正しさ、上品さ、（decorums で）礼儀作法、礼節<br>
-belie	【他】…と矛盾する、…が偽りであることを示す、（期待など）を裏切る<br>
-quay	【名】埠頭、岸壁、波止場<br>
-billow	【自】（帆・旗などが）膨らむ、はためく、（炎・煙などが）渦巻く、うねる<br>【名】（炎や煙の）うねり、大波
-capricious	【形】気まぐれな、移り気な、不規則な、不安定な<br>
-bode	【他】…の前兆となる、…を予兆する<br>
-auspicious	【形】幸先のよい、めでたい、吉兆の<br>
-subversion	【名】（政府の）転覆、破壊<br>
-cleave	【他】…を切り裂く、（道など）を切り開く、…を分裂させる、…を裂く<br>【自】①割れる、裂ける　②執着する、くっつく<br>
-iris	【名】（眼球の）虹彩、アイリス（アヤメ科の植物）<br>
-`
-
 function getValidIndex (index, list) {
   return Math.min(Math.max(index, 0), list.length - 1)
 }
@@ -45,25 +13,11 @@ function escapeHtml (html) {
   return p.innerHTML
 }
 
+function humanizeKeyName (name) {
+  return name.replace(/Arrow(Up|Down|Right|Left)$/, '$1').toLowerCase()
+}
+
 class App {
-  constructor () {
-    this.index = -1
-    this.wordList = null
-    this.defaultVisible = {
-      word: true,
-      definition: false,
-      caption: false,
-      image: true
-    }
-    this.removeHistory = []
-  }
-
-  setWordList (wordList, filename) {
-    this.wordList = wordList
-    this.wordListFilename = filename
-    this.renderActiveWordList()
-  }
-
   getCardIndexFor (where) {
     if (where === 'top') return 0
 
@@ -77,19 +31,25 @@ class App {
   }
 
   getCard () {
-    return this.wordList[this.index]
+    return this.wordList[this.index] || {}
   }
 
   setCard (where) {
-    if (!this.wordList.length) return
     this.index = this.getCardIndexFor(where)
-    const { word, definition = '' } = this.getCard()
-    document.getElementById('word').innerText = word
-    document.getElementById('definition').innerText = definition.replace(/<br>/g, '\n')
+    const { word = '', definition = '' } = this.getCard()
 
-    this.updateFieldVisibility(this.defaultVisible)
+    if (!word) {
+      console.log('CALLED!')
+      document.getElementById('word').innerText = 'EMPTY!'
+      document.getElementById('definition').innerText = 'Sroll down and drop your file.'
+      this.updateFieldVisibility({ word: true, definition: true, caption: true })
+    } else {
+      document.getElementById('word').innerText = word
+      document.getElementById('definition').innerText = definition.replace(/<br>/g, '\n')
+      this.updateFieldVisibility(this.defaultVisible)
+    }
 
-    if (Config.searchSytemDictionary) {
+    if (word && (Config || {}).searchSytemDictionary) {
       const url = `http://127.0.0.1:8000/${word}`
       const xhr = new XMLHttpRequest()
       xhr.open('GET', url, true)
@@ -98,21 +58,22 @@ class App {
   }
 
   getImageUrl () {
-    return `url('imgs/${this.getCard().word}.png')`
+    const word = this.getCard().word
+    return word ? `url('imgs/${this.getCard().word}.png')` : ''
   }
 
   updateFieldVisibility (state) {
     for (const field of Object.keys(state)) {
       const value = state[field]
-      if (field === 'image') {
-        document.body.style.backgroundImage = value ? this.getImageUrl() : ''
-        return
-      }
-      const style = styleForId(field)
-      if (field === 'caption') {
-        style.display = value ? 'none' : 'block'
-      } else {
-        style.visibility = value ? '' : 'hidden'
+      switch (field) {
+        case 'image':
+          document.body.style.backgroundImage = value ? this.getImageUrl() : ''
+          break
+        case 'caption':
+          styleForId(field).display = value ? 'block' : 'none'
+          break
+        default:
+          styleForId(field).visibility = value ? '' : 'hidden'
       }
     }
   }
@@ -163,11 +124,11 @@ class App {
       const removed = this.wordList.splice(this.index, 1)[0]
       const operation = { item: removed, index: this.index }
       this.removeHistory.push(operation)
-      this.refreshAfterWordListMutation()
+      this.refresh()
     }
   }
 
-  refreshAfterWordListMutation () {
+  refresh () {
     this.setCard('refresh')
     this.renderActiveWordList()
     this.renderRemovedWordList()
@@ -178,7 +139,7 @@ class App {
       const { item, index } = this.removeHistory.pop()
       this.wordList.splice(index, 0, item)
       this.index = index
-      this.refreshAfterWordListMutation()
+      this.refresh()
     }
   }
 
@@ -211,14 +172,46 @@ class App {
       a.click()
     }
   }
+
+  getDefaultState () {
+    return {
+      index: -1,
+      wordList: [],
+      wordListFilename: '',
+      removeHistory: [],
+      defaultVisible: {
+        word: true,
+        definition: false,
+        caption: false,
+        image: true
+      }
+    }
+  }
+
+  setState (state = {}) {
+    Object.assign(this, this.getDefaultState(), state)
+    this.refresh()
+  }
+
+  getState () {
+    return {
+      index: this.index,
+      wordList: this.wordList,
+      wordListFilename: this.wordListFilename,
+      removeHistory: this.removeHistory,
+      defaultVisible: this.defaultVisible
+    }
+  }
 }
 
+// Main section
+//==============================================
+
+const SERVICE_NAME = 't9md/cram-vocabulary'
+let UserKeymap = {}
+let Config = {}
+
 const Commands = {
-  'play-or-stop-audio': () => playOrStopAudio(),
-  'audio-forward-5s': () => setAudioTimeWithDelta(+5),
-  'audio-rewind-5s': () => setAudioTimeWithDelta(-5),
-  'audio-rate-up': () => changeAudioSpeed('>'),
-  'audio-rate-down': () => changeAudioSpeed('<'),
   'first-card': () => app.setCard('top'),
   'next-card': () => app.setCard('next'),
   'previous-card': () => app.setCard('previous'),
@@ -230,7 +223,8 @@ const Commands = {
   'delete-current-word': () => app.deleteCurrentWord(),
   'undo-deletion': () => app.undoDeletion(),
   'search-image-now': () => app.searchImageNow(),
-  'show-help': () => app.showHelp()
+  'show-help': () => app.showHelp(),
+  test: () => test()
 }
 
 let DefaultKeymap = {
@@ -254,8 +248,26 @@ let DefaultKeymap = {
   '?': 'show-help'
 }
 
+function resetApp () {
+  app.setState({})
+  app.refresh()
+}
+
+function loadState () {
+  let state
+  try {
+    state = JSON.parse(localStorage[SERVICE_NAME] || '{}')
+  } catch (e) {
+    state = {}
+  }
+  return state
+}
+
 const app = new App()
-function init () {
+
+window.onload = () => {
+  app.setState(loadState())
+
   const handleBodyClick = event => {
     if (event.target !== document.body) return
     if (app.wordList) app.next()
@@ -274,7 +286,6 @@ function init () {
   }
   document.body.addEventListener('keydown', handleKeydown)
 
-  styleForId('caption').display = 'none'
   const loadWordList = (text, filename) => {
     const list = []
     for (const line of text.split('\n')) {
@@ -284,9 +295,12 @@ function init () {
       }
     }
 
-    document.getElementById('file-area').remove()
-    app.setWordList(list, filename)
-    app.setCard('next')
+    app.setState({
+      index: 0,
+      wordList: list,
+      wordListFilename: filename
+    })
+    app.refresh()
   }
 
   // Handle drop file
@@ -313,10 +327,6 @@ function init () {
       }
     }
     document.getElementById('fileinput').addEventListener('change', handleFile, false)
-  }
-
-  if (WORD_LIST) {
-    loadWordList(WORD_LIST, 'static-words')
   }
 
   {
@@ -356,33 +366,7 @@ function init () {
   }
 }
 
-function humanizeKeyName (name) {
-  return name.replace(/Arrow(Up|Down|Right|Left)$/, '$1').toLowerCase()
-}
-
-function playOrStopAudio (event) {
-  const audio = document.getElementById('sound')
-  if (audio.paused) {
-    audio.play()
-  } else {
-    audio.pause()
-  }
-}
-
-const audioSpeeds = [0.5, 0.8, 1.0, 1.1, 1.2, 1.3]
-
-function setAudioTimeWithDelta (delta) {
-  const audio = document.getElementById('sound')
-  audio.currentTime = audio.currentTime + delta
-}
-
-function changeAudioSpeed (which) {
-  const audio = document.getElementById('sound')
-  let index = audioSpeeds.indexOf(audio.playbackRate)
-  if (which === '>') {
-    index = getValidIndex(index + 1, audioSpeeds)
-  } else {
-    index = getValidIndex(index - 1, audioSpeeds)
-  }
-  audio.playbackRate = audioSpeeds[index]
+window.onbeforeunload = event => {
+  localStorage[SERVICE_NAME] = JSON.stringify(app.getState())
+  event.returnValue = ''
 }

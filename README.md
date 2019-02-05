@@ -120,8 +120,7 @@ Options:
 ### slideshow app
 
 - キーマップを変えられる？ → 変えられる。`slideshow/config.js` を直接編集して下さい。
-- 毎回単語リストアップロードするの面倒です。`slideshow/config.js` `WORD_LIST`に直接単語リスト貼り付ければOK。
-  - さらに　Chrome のブックマークバーに登録しておけば、ワンクリックでいつでも単語学習が開始できる！
+- さらに　Chrome のブックマークバーに登録しておけば、ワンクリックでいつでも単語学習が開始できる！
 
 - `slideshow/config.js` の `searchSytemDictionary:` ってなに？
   - Dictionary.app でも自動で単語検索してくれる機能。つかうには
