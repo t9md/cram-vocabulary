@@ -1,4 +1,6 @@
 let WORD_LIST = ''
+let UserKeymap = {}
+
 _WORD_LIST = `
 accede	【自】（地位・職に）就く、継承する、加盟する、同意する、応じる<br>
 artifice	【名】巧みな策略、術策、ぺてん<br>
@@ -218,14 +220,36 @@ const Commands = {
   'show-help': () => app.showHelp()
 }
 
+let DefaultKeymap = {
+  '0': 'first-card',
+  ArrowUp: 'previous-card',
+  ArrowDown: 'next-card',
+  ArrowRight: 'next',
+  ArrowLeft: 'delete-current-word',
+  s: 'search-image-now',
+  k: 'previous-card',
+  j: 'next-card',
+  n: 'next',
+  '1': 'toggle-word',
+  '2': 'toggle-definition',
+  '-': 'delete-current-word',
+  t: 'toggle-caption',
+  u: 'undo-deletion',
+  Enter: 'next',
+  // Backspace: 'delete-current-word',
+  '?': 'show-help'
+}
+
 const app = new App()
 function init () {
+
   const handleBodyClick = event => {
     if (event.target !== document.body) return
     if (app.wordList) app.next()
   }
   document.body.addEventListener('click', handleBodyClick, 'false')
 
+  const Keymap = Object.assign(DefaultKeymap, UserKeymap || {})
   const handleKeydown = event => {
     // console.log(event.key);
     if (event.key in Keymap) {
