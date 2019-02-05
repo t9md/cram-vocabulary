@@ -52,9 +52,9 @@ class App {
     this.defaultVisible = {
       word: true,
       definition: false,
-      caption: false
+      caption: false,
+      image: true
     }
-    this.currentVisible = {}
     this.removeHistory = []
   }
 
@@ -76,16 +76,18 @@ class App {
     return getValidIndex(this.index + delta, this.wordList)
   }
 
+  getCard () {
+    return this.wordList[this.index]
+  }
+
   setCard (where) {
     if (!this.wordList.length) return
     this.index = this.getCardIndexFor(where)
-    const { word, definition = '' } = this.wordList[this.index]
+    const { word, definition = '' } = this.getCard()
     document.getElementById('word').innerText = word
     document.getElementById('definition').innerText = definition.replace(/<br>/g, '\n')
-    document.body.style.backgroundImage = `url('imgs/${word}.png')`
 
-    Object.assign(this.currentVisible, this.defaultVisible)
-    this.updateFieldVisibility(this.currentVisible)
+    this.updateFieldVisibility(this.defaultVisible)
 
     if (Config.searchSytemDictionary) {
       const url = `http://127.0.0.1:8000/${word}`
@@ -95,15 +97,18 @@ class App {
     }
   }
 
-  toggleCaption () {
-    this.defaultVisible.caption = !this.defaultVisible.caption
-    this.updateFieldVisibility({ caption: this.defaultVisible.caption })
+  getImageUrl () {
+    return `url('imgs/${this.getCard().word}.png')`
   }
 
   updateFieldVisibility (state) {
     for (const field of Object.keys(state)) {
-      const style = styleForId(field)
       const value = state[field]
+      if (field === 'image') {
+        document.body.style.backgroundImage = value ? this.getImageUrl() : ''
+        return
+      }
+      const style = styleForId(field)
       if (field === 'caption') {
         style.display = value ? 'none' : 'block'
       } else {
@@ -113,14 +118,21 @@ class App {
   }
 
   toggleShowField (field) {
-    this.defaultVisible[field] = !this.defaultVisible[field]
-    this.updateFieldVisibility(this.defaultVisible)
+    const newValue = !this.defaultVisible[field]
+    this.defaultVisible[field] = newValue
+    const obj = {}
+    obj[field] = newValue
+    this.updateFieldVisibility(obj)
   }
 
   next () {
     const captionStyle = styleForId('caption')
     if (captionStyle.display === 'none') {
       captionStyle.display = 'block'
+      return
+    }
+    if (!document.body.style.backgroundImage) {
+      this.updateFieldVisibility({ image: true })
       return
     }
     if (styleForId('word').visibility === 'hidden' || styleForId('definition').visibility === 'hidden') {
@@ -192,7 +204,7 @@ class App {
   }
 
   searchImageNow () {
-    const word = this.wordList[this.index]
+    const word = this.getCard()
     if (word && word.word) {
       const a = document.getElementById('image-search')
       a.href = 'https://www.google.com/search?gl=us&hl=en&pws=0&gws_rd=cr&tbm=isch&q=' + word.word
@@ -208,12 +220,13 @@ const Commands = {
   'audio-rate-up': () => changeAudioSpeed('>'),
   'audio-rate-down': () => changeAudioSpeed('<'),
   'first-card': () => app.setCard('top'),
-  'toggle-word': () => app.toggleShowField('word'),
-  'toggle-definition': () => app.toggleShowField('definition'),
   'next-card': () => app.setCard('next'),
   'previous-card': () => app.setCard('previous'),
   next: () => app.next(),
-  'toggle-caption': () => app.toggleCaption(),
+  'toggle-image': () => app.toggleShowField('image'),
+  'toggle-word': () => app.toggleShowField('word'),
+  'toggle-definition': () => app.toggleShowField('definition'),
+  'toggle-caption': () => app.toggleShowField('caption'),
   'delete-current-word': () => app.deleteCurrentWord(),
   'undo-deletion': () => app.undoDeletion(),
   'search-image-now': () => app.searchImageNow(),
@@ -229,6 +242,7 @@ let DefaultKeymap = {
   s: 'search-image-now',
   k: 'previous-card',
   j: 'next-card',
+  i: 'toggle-image',
   n: 'next',
   '1': 'toggle-word',
   '2': 'toggle-definition',
@@ -242,7 +256,6 @@ let DefaultKeymap = {
 
 const app = new App()
 function init () {
-
   const handleBodyClick = event => {
     if (event.target !== document.body) return
     if (app.wordList) app.next()
