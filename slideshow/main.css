@@ -21,7 +21,7 @@ a:hover {
 }
 
 #caption {
-  margin-top: 6%;
+  margin-top: 10%;
   width: 100%;
   text-align: center;
 }
@@ -30,7 +30,7 @@ a:hover {
   color: white;
   background-color: black;
   padding: 0px 10px;
-  opacity: 0.5;
+  opacity: 0.6;
   border-radius: 10px;
 }
 
