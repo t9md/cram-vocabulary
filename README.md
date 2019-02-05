@@ -1,17 +1,3 @@
-<!-- TOC START min:1 max:3 link:true update:true -->
-- [cram-vocabulary](#cram-vocabulary)
-- [これは何？](#これは何)
-- [おおまかな流れ](#おおまかな流れ)
-  - [前準備](#前準備)
-- [チュートリアル](#チュートリアル)
-  - [1.画像集め](#1画像集め)
-  - [2. 画像を見ながら単語学習](#2-画像を見ながら単語学習)
-  - [3. 補足説明](#3-補足説明)
-    - [`bach-image-retrieve.py`](#bach-image-retrievepy)
-    - [slideshow app](#slideshow-app)
-
-<!-- TOC END -->
-
 # cram-vocabulary
 
 ![](misc/cram-vocabulary.gif)
