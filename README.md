@@ -132,6 +132,7 @@ Options:
 
 # CHANGES
 
+- v4.0: ユーザーの単語リストを永続化させた。毎回ドロップする必要が無くなったので、`config.js` で `WORD_LIST` 経由で設定する方法を廃止。
 - v3.1: `toggle-image`(デフォルトキーマップ `i`) で、イメージ画像の表示設定を切り替える。
 - v3.0: `UserKeymap` と `DefaultKeymap` を分けた。`UserKeymap` は `DefaultKeymap`  に対する追加として扱われる
 - v2.0: `search-image-now` コマンド追加。 `s` にキーマップ
