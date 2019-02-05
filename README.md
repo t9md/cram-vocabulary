@@ -133,6 +133,7 @@ Options:
 
 # CHANGES
 
+- v3.0: `UserKeymap` と `DefaultKeymap` を分けた。`UserKeymap` は `DefaultKeymap`  に対する追加として扱われる
 - v2.0: `search-image-now` コマンド追加。 `s` にキーマップ
 - v1.1: スタイルをちょっと変更
 - v1.0: 最初の公開
