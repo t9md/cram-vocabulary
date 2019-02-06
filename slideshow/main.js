@@ -295,7 +295,6 @@ function initKeyboad () {
       return false
     }
 
-    // console.log(event.key);
     if (event.key in Keymap) {
       event.preventDefault()
       event.stopPropagation()
