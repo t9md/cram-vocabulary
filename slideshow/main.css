@@ -3,6 +3,7 @@ html {
   height: 100%;
 }
 body {
+  font-family: Helvetica;
   background-repeat: no-repeat;
   background-size: cover;
   height: 3000px;
@@ -33,9 +34,19 @@ a:hover {
 .caption-item {
   color: white;
   background-color: black;
-  padding: 0px 10px;
+  padding: 5px 10px;
   opacity: 0.6;
   border-radius: 10px;
+}
+
+#progress-counter {
+  position: fixed;
+  top: 0;
+  right: 0;
+  padding: 10px 10px;
+  color: white;
+  background-color: black;
+  opacity: 0.6;
 }
 
 #word {

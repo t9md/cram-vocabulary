@@ -54,6 +54,14 @@ class App {
       xhr.open('GET', url, true)
       xhr.send()
     }
+
+    this.renderProgress()
+  }
+
+  renderProgress() {
+    const total = this.wordList.length
+    const current = this.index + 1
+    document.getElementById('progress-counter').innerText = `${current} / ${total}`
   }
 
   getImageUrl () {
