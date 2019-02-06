@@ -284,8 +284,10 @@ const Commands = {
 
 function initBodyClick () {
   const handleBodyClick = event => {
-    if (event.target !== document.body) return
-    if (app.wordList) app.next()
+    const element = event.target
+    if (element === document.body || document.getElementById('caption').contains(element)) {
+      if (app.wordList) app.next()
+    }
   }
   document.body.addEventListener('click', handleBodyClick, 'false')
 }
