@@ -13,10 +13,6 @@ function escapeHtml (html) {
   return p.innerHTML
 }
 
-function humanizeKeyName (name) {
-  return name.replace(/Arrow(Up|Down|Right|Left)$/, '$1').toLowerCase()
-}
-
 class App {
   getCardIndexFor (where) {
     if (where === 'top') return 0
@@ -357,7 +353,7 @@ function initHelp () {
   container.style.display = 'none'
   const items = []
   for (const key of Object.keys(Keymap)) {
-    const keyAndAction = escapeHtml(humanizeKeyName(key) + ':  ' + Keymap[key])
+    const keyAndAction = escapeHtml(key + ':  ' + Keymap[key])
     items.push(`<li><tt>${keyAndAction}</tt></li>`)
   }
   container.innerHTML = '<ul>' + items.join('\n') + '</ul>'
