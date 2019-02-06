@@ -1,6 +1,6 @@
 // Configuration
 //===================
-Config.searchSytemDictionary = false // macOS only
+// Config.searchSytemDictionary = false // macOS only
 
 // Keymap
 //===================
@@ -10,7 +10,7 @@ Config.searchSytemDictionary = false // macOS only
 // Ja: 使える キー の名前は以下のリンクで確認可能です。
 //   https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key#Result
 //
-// UserKeymap = {
+// Keymap = {
 //   '0': 'first-card',
 //   ArrowUp: 'previous-card',
 //   ArrowDown: 'next-card',

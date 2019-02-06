@@ -40,15 +40,15 @@ class App {
 
     if (!word) {
       document.getElementById('word').innerText = 'EMPTY!'
-      document.getElementById('definition').innerText = 'Sroll down and drop your file.'
-      this.updateFieldVisibility({ word: true, definition: true, caption: true, image: false})
+      document.getElementById('definition').innerHTML = '&#8595; Scroll down and drop your file.'
+      this.updateFieldVisibility({ word: true, definition: true, caption: true, image: false })
     } else {
       document.getElementById('word').innerText = word
       document.getElementById('definition').innerText = definition.replace(/<br>/g, '\n')
       this.updateFieldVisibility(this.defaultVisible)
     }
 
-    if (word && (Config || {}).searchSytemDictionary) {
+    if (word && Config.searchSytemDictionary) {
       const url = `http://127.0.0.1:8000/${word}`
       const xhr = new XMLHttpRequest()
       xhr.open('GET', url, true)
@@ -200,31 +200,46 @@ class App {
       defaultVisible: this.defaultVisible
     }
   }
+
+  loadWordList (text, filename) {
+    const list = []
+    for (const line of text.split('\n')) {
+      let [word, definition] = line.split('\t')
+      if (word && definition) {
+        list.push({ word: word, definition: definition })
+      }
+    }
+
+    this.setState({
+      index: 0,
+      wordList: list,
+      wordListFilename: filename
+    })
+  }
+
+  init () {
+    let state
+    try {
+      state = JSON.parse(localStorage[SERVICE_NAME] || '{}')
+    } catch (e) {
+      state = {}
+    }
+    this.setState(state)
+  }
+
+  save () {
+    localStorage[SERVICE_NAME] = JSON.stringify(this.getState())
+  }
 }
 
 // Main section
-//==============================================
-
+//= =============================================
 const SERVICE_NAME = 't9md/cram-vocabulary'
-let UserKeymap = {}
+
 let Config = {}
+const DefaultConfig = { searchSytemDictionary: false }
 
-const Commands = {
-  'first-card': () => app.setCard('top'),
-  'next-card': () => app.setCard('next'),
-  'previous-card': () => app.setCard('previous'),
-  next: () => app.next(),
-  'toggle-image': () => app.toggleShow('image'),
-  'toggle-word': () => app.toggleShow('word'),
-  'toggle-definition': () => app.toggleShow('definition'),
-  'toggle-caption': () => app.toggleShow('caption'),
-  'delete-current-word': () => app.deleteCurrentWord(),
-  'undo-deletion': () => app.undoDeletion(),
-  'search-image-now': () => app.searchImageNow(),
-  'show-help': () => app.showHelp(),
-  test: () => test()
-}
-
+let Keymap = {}
 let DefaultKeymap = {
   '0': 'first-card',
   ArrowUp: 'previous-card',
@@ -246,32 +261,31 @@ let DefaultKeymap = {
   '?': 'show-help'
 }
 
-function resetApp () {
-  app.setState({})
+const Commands = {
+  'first-card': () => app.setCard('top'),
+  'next-card': () => app.setCard('next'),
+  'previous-card': () => app.setCard('previous'),
+  next: () => app.next(),
+  'toggle-image': () => app.toggleShow('image'),
+  'toggle-word': () => app.toggleShow('word'),
+  'toggle-definition': () => app.toggleShow('definition'),
+  'toggle-caption': () => app.toggleShow('caption'),
+  'delete-current-word': () => app.deleteCurrentWord(),
+  'undo-deletion': () => app.undoDeletion(),
+  'search-image-now': () => app.searchImageNow(),
+  'show-help': () => app.showHelp(),
+  test: () => test()
 }
 
-function loadState () {
-  let state
-  try {
-    state = JSON.parse(localStorage[SERVICE_NAME] || '{}')
-  } catch (e) {
-    state = {}
-  }
-  return state
-}
-
-const app = new App()
-
-window.onload = () => {
-  app.setState(loadState())
-
+function initBodyClick () {
   const handleBodyClick = event => {
     if (event.target !== document.body) return
     if (app.wordList) app.next()
   }
   document.body.addEventListener('click', handleBodyClick, 'false')
+}
 
-  const Keymap = Object.assign(DefaultKeymap, UserKeymap || {})
+function initKeyboad () {
   const handleKeydown = event => {
     // console.log(event.key);
     if (event.key in Keymap) {
@@ -282,87 +296,88 @@ window.onload = () => {
     }
   }
   document.body.addEventListener('keydown', handleKeydown)
+}
 
-  const loadWordList = (text, filename) => {
-    const list = []
-    for (const line of text.split('\n')) {
-      let [word, definition] = line.split('\t')
-      if (word && definition) {
-        list.push({ word: word, definition: definition })
-      }
-    }
-
-    app.setState({
-      index: 0,
-      wordList: list,
-      wordListFilename: filename
-    })
-  }
-
-  // Handle drop file
-  {
-    // copy&modified from https://stackoverflow.com/questions/8006715/drag-drop-files-into-standard-html-file-input
-    const element = document.getElementById('filedrop')
-    const cancelDefault = event => event.preventDefault()
-    element.ondragover = cancelDefault
-    element.ondragenter = cancelDefault
-    element.ondrop = event => {
-      fileinput.files = event.dataTransfer.files
-      event.preventDefault()
-    }
-  }
-
-  {
-    const handleFile = event => {
-      const element = event.target
-      const file = element.files[0]
-      if (file) {
-        const reader = new FileReader()
-        reader.onload = event => loadWordList(reader.result, file.name)
-        reader.readAsText(file)
-      }
-    }
-    document.getElementById('fileinput').addEventListener('change', handleFile, false)
-  }
-
-  {
-    const handleDoubleClick = event => {
-      const element = event.target
-      event.stopPropagation()
-      const index = element.value.substr(0, element.selectionStart).split('\n').length - 1
-      if (index > 0) {
-        app.index = index
-        app.setCard('refresh')
-      }
-    }
-    styleForId('words-container').top = window.screen.height + 'px'
-    document.getElementById('active-words').addEventListener('dblclick', handleDoubleClick)
-  }
-  {
-    const container = document.getElementById('help')
-    container.style.display = 'none'
-    const items = []
-    for (const key of Object.keys(Keymap)) {
-      const keyAndAction = escapeHtml(humanizeKeyName(key) + ':  ' + Keymap[key])
-      items.push(`<li><tt>${keyAndAction}</tt></li>`)
-    }
-    container.innerHTML = '<ul>' + items.join('\n') + '</ul>'
-  }
-  {
-    function downloadWordList (event) {
-      const element = event.target
-      const kind = element.id.replace('download-', '')
-      const content = element.parentElement.nextElementSibling.value
-      const blob = new Blob([content], { type: 'text/plain' })
-      element.download = kind + '-' + app.wordListFilename
-      element.href = window.URL.createObjectURL(blob)
-    }
-    document.getElementById('download-active').addEventListener('click', downloadWordList)
-    document.getElementById('download-removed').addEventListener('click', downloadWordList)
+function initDropFile () {
+  // copy&modified from https://stackoverflow.com/questions/8006715/drag-drop-files-into-standard-html-file-input
+  const element = document.getElementById('filedrop')
+  const cancelDefault = event => event.preventDefault()
+  element.ondragover = cancelDefault
+  element.ondragenter = cancelDefault
+  element.ondrop = event => {
+    fileinput.files = event.dataTransfer.files
+    event.preventDefault()
   }
 }
 
+function initFileInput () {
+  const handleFile = event => {
+    const file = event.target.files[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = event => app.loadWordList(reader.result, file.name)
+      reader.readAsText(file)
+    }
+  }
+  document.getElementById('fileinput').addEventListener('change', handleFile, false)
+}
+
+function initDoubleClickOfTextArea () {
+  const handleDoubleClick = event => {
+    const element = event.target
+    event.stopPropagation()
+    const index = element.value.substr(0, element.selectionStart).split('\n').length - 1
+    if (index > 0) {
+      app.index = index
+      app.setCard('refresh')
+    }
+  }
+  styleForId('words-container').top = window.screen.height + 'px'
+  document.getElementById('active-words').addEventListener('dblclick', handleDoubleClick)
+}
+
+function initHelp () {
+  const container = document.getElementById('help')
+  container.style.display = 'none'
+  const items = []
+  for (const key of Object.keys(Keymap)) {
+    const keyAndAction = escapeHtml(humanizeKeyName(key) + ':  ' + Keymap[key])
+    items.push(`<li><tt>${keyAndAction}</tt></li>`)
+  }
+  container.innerHTML = '<ul>' + items.join('\n') + '</ul>'
+}
+
+function initDownload () {
+  function downloadWordList (event) {
+    const element = event.target
+    const kind = element.id.replace('download-', '')
+    const content = element.parentElement.nextElementSibling.value
+    const blob = new Blob([content], { type: 'text/plain' })
+    element.download = kind + '-' + app.wordListFilename
+    element.href = window.URL.createObjectURL(blob)
+  }
+  document.getElementById('download-active').addEventListener('click', downloadWordList)
+  document.getElementById('download-removed').addEventListener('click', downloadWordList)
+}
+
+const app = new App()
+
+window.onload = () => {
+  Config = Object.assign(Config, DefaultConfig)
+  Keymap = Object.assign(Keymap, DefaultKeymap)
+
+  document.getElementById('reset-app').addEventListener('click', () => app.setState({}))
+  app.init()
+  initBodyClick()
+  initKeyboad()
+  initDropFile()
+  initFileInput()
+  initDoubleClickOfTextArea()
+  initHelp()
+  initDownload()
+}
+
 window.onbeforeunload = event => {
-  localStorage[SERVICE_NAME] = JSON.stringify(app.getState())
+  app.save()
   event.returnValue = ''
 }
