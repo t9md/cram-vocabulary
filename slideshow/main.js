@@ -274,7 +274,8 @@ const Commands = {
   'undo-deletion': () => app.undoDeletion(),
   'search-image-now': () => app.searchImageNow(),
   'show-help': () => app.showHelp(),
-  test: () => test()
+  'scroll-to-top': () => window.scrollTo(0, 0),
+  'scroll-to-word-list': () => document.getElementById('words-container').scrollIntoView()
 }
 
 function initBodyClick () {

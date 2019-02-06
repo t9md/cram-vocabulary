@@ -1,35 +1,26 @@
 // Configuration
-//===================
+// ===================
 // Config.searchSytemDictionary = false // macOS only
 
 // Keymap
-//===================
+// ===================
 // En: The `key` must match with `event.key` of `keydown` event.
-//   You can check it in following link.
-//   https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key#Result
+// En: You can check it in following link.
+// En: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key#Result
 // Ja: 使える キー の名前は以下のリンクで確認可能です。
-//   https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key#Result
+// Ja: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key#Result
 //
 // Keymap = {
-//   '0': 'first-card',
-//   ArrowUp: 'previous-card',
-//   ArrowDown: 'next-card',
-//   ArrowRight: 'next',
-//   // ArrowLeft: 'delete-current-word',
-//   k: 'previous-card',
-//   j: 'next-card',
-//   n: 'next',
-//   '1': 'toggle-word',
-//   '2': 'toggle-definition',
-//   '-': 'delete-current-word',
-//   t: 'toggle-caption',
-//   u: 'undo-deletion',
-//   Enter: 'next',
-//   s: 'search-image-now',
-//   // Backspace: 'delete-current-word',
-//   '?': 'show-help'
+//   ArrowLeft: 'delete-current-word',
+//   Backspace: 'delete-current-word',
+//   g: 'scroll-to-top',
+//   G: 'scroll-to-word-list'
 // }
 
-// To disable default keymap completely, enable following line.
-// デフォルトキーマップを全て無効にしたければ以下のコメントを外す
-// DeafultKeymap = {}
+// En: To disable default keymap completely, enable following line.
+// Ja: デフォルトキーマップを全て無効にしたければ以下のコメントを外す
+// DefaultKeymap = {}
+
+// En: You can delete specific only like this.
+// Ja: 個別にキーを消すことも可能。
+// delete DefaultKeymap['k']
