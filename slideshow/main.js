@@ -287,6 +287,14 @@ function initBodyClick () {
 
 function initKeyboad () {
   const handleKeydown = event => {
+    // console.log(event.key)
+
+    // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/getModifierState
+    const modifiers = ['Fn', 'Hyper', 'OS', 'Super', 'Win', 'Control', 'Alt', 'Meta']
+    if (modifiers.some(modifier => event.getModifierState(modifier))) {
+      return false
+    }
+
     // console.log(event.key);
     if (event.key in Keymap) {
       event.preventDefault()
