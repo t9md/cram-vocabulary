@@ -267,6 +267,12 @@ class App {
   save () {
     localStorage[SERVICE_NAME] = JSON.stringify(this.getState())
   }
+
+  screenCaptureMode() {
+    // Disable unnecessary feature to not disturb screen capture for movie by Selenium.
+    this.defaultVisible = { word: true, definition: true, caption: true, image: true }
+    Config = DefaultConfig
+  }
 }
 
 // Main section
