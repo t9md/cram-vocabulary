@@ -14,6 +14,12 @@ function escapeHtml (html) {
 }
 
 class App {
+  constructor () {
+    // Audio.play() result in exception when it is called with no user interaction after window.load
+    // See https://developers.google.com/web/updates/2017/09/autoplay-policy-changes
+    this.veryFirstAudioPlay = true
+  }
+
   getCardIndexFor (where) {
     if (where === 'top') return 0
 
@@ -38,6 +44,10 @@ class App {
   }
 
   playAudio () {
+    if (this.veryFirstAudioPlay) {
+      this.veryFirstAudioPlay = false
+      return
+    }
     // Stop previous sound before playing new one.
     if (this.audio && !this.audio.paused) this.audio.pause()
 
@@ -288,6 +298,7 @@ let DefaultKeymap = {
   u: 'undo-deletion',
   Enter: 'next',
   // Backspace: 'delete-current-word',
+  '?': 'show-help',
   p: 'play-or-stop-audio'
 }
 
@@ -404,8 +415,8 @@ function initDownload () {
 const app = new App()
 
 window.onload = () => {
-  Config = Object.assign(Config, DefaultConfig)
-  Keymap = Object.assign(Keymap, DefaultKeymap)
+  Config = Object.assign({}, DefaultConfig, Config)
+  Keymap = Object.assign({}, DefaultKeymap, Keymap)
 
   document.getElementById('reset-app').addEventListener('click', () => app.setState({}))
   app.init()
