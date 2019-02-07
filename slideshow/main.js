@@ -30,6 +30,27 @@ class App {
     return this.wordList[this.index] || {}
   }
 
+  playOrStopAudio () {
+    if (!this.audio) return
+
+    if (this.audio.paused) this.audio.play()
+    else this.audio.pause()
+  }
+
+  playAudio () {
+    // Stop previous sound before playing new one.
+    if (this.audio && !this.audio.paused) this.audio.pause()
+
+    const word = this.getCard().word
+    if (!word) {
+      this.audio = null
+      return
+    }
+
+    this.audio = new Audio(`sounds/${word}.wav`)
+    this.audio.play()
+  }
+
   setCard (where) {
     this.index = this.getCardIndexFor(where)
     const { word = '', definition = '' } = this.getCard()
@@ -42,6 +63,8 @@ class App {
       document.getElementById('word').innerText = word
       document.getElementById('definition').innerText = definition.replace(/<br>/g, '\n')
       this.updateFieldVisibility(this.defaultVisible)
+
+      if (Config.playAudio) this.playAudio()
     }
 
     if (word && Config.searchSytemDictionary) {
@@ -241,7 +264,10 @@ class App {
 const SERVICE_NAME = 't9md/cram-vocabulary'
 
 let Config = {}
-const DefaultConfig = { searchSytemDictionary: false }
+const DefaultConfig = {
+  searchSytemDictionary: false,
+  playAudio: false
+}
 
 let Keymap = {}
 let DefaultKeymap = {
@@ -262,7 +288,7 @@ let DefaultKeymap = {
   u: 'undo-deletion',
   Enter: 'next',
   // Backspace: 'delete-current-word',
-  '?': 'show-help'
+  p: 'play-or-stop-audio'
 }
 
 const Commands = {
@@ -279,7 +305,8 @@ const Commands = {
   'search-image-now': () => app.searchImageNow(),
   'show-help': () => app.showHelp(),
   'scroll-to-top': () => window.scrollTo(0, 0),
-  'scroll-to-word-list': () => document.getElementById('words-container').scrollIntoView()
+  'scroll-to-word-list': () => document.getElementById('words-container').scrollIntoView(),
+  'play-or-stop-audio': () => app.playOrStopAudio()
 }
 
 function initBodyClick () {

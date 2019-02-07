@@ -8,6 +8,10 @@
 具体的には、英単語の画像イメージを見ながら単語を詰め込めるアプリを提供する。  
 Intensive な詰め込みを加速させることがを意図しており、Anki などの完全な暗記管理アプリの代わりにはならない。むしろ合わせて使うことを想定している。  
 
+関連プロジェクト [build-kikutan](https://github.com/t9md/build-kikutan) と連携させることで
+- 単語学習動画の作成(build-kikutan 側が cram-vocabulary のHTML 表示をパラパラ漫画動画にする)
+- cram-vocabulary に音声データを提供(build-kikutan から cram-voabulary に音声を一括生成、インストール)
+
 # おおまかな流れ
 
 1. あなたは、覚えたい単語リストを持っている。(単語リスト: 英単語、意味がタブ文字で区切られたテキストファイル)
@@ -135,8 +139,12 @@ Options:
     - Chrome ブラウザから直接 `dict://{word}` を開けないので、`http` にしている
     - 検索後 Dictionary.app にフォーカスが取られるが、それを Chrome に戻す。
 
+- 音声再生対応している？: 簡易的に対応している。`Config.playAudio = true` とすると `sounds/{word}.wav` を再生する。build-kikutan でこの音声を一括インストールできる。
+
 # CHANGES
 
+- vX.X: `Config.playAudio = true` とすれば `sounds/{word}.wav` を再生する。build-kikutan との連携用途
+- vX.X: しばらくここにかくの忘れていたので色々抜けている。
 - v4.0: ユーザーの単語リストを永続化させた。毎回ドロップする必要が無くなったので、`config.js` で `WORD_LIST` 経由で設定する方法を廃止。
 - v3.1: `toggle-image`(デフォルトキーマップ `i`) で、イメージ画像の表示設定を切り替える。
 - v3.0: `UserKeymap` と `DefaultKeymap` を分けた。`UserKeymap` は `DefaultKeymap`  に対する追加として扱われる
