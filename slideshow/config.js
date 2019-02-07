@@ -1,5 +1,6 @@
+// Configuration
 // ===================
-// Config.searchSytemDictionary = false // macOS only
+// Config.searchSystemDictionary = false // macOS only
 // Config.playAudio = true // play `sounds/${word}.wav`
 
 // Keymap

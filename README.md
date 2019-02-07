@@ -131,9 +131,9 @@ Options:
 - キーマップを変えられる？ → 変えられる。`slideshow/config.js` を直接編集して下さい。
 - さらに　Chrome のブックマークバーに登録しておけば、ワンクリックでいつでも単語学習が開始できる！
 
-- `slideshow/config.js` の `searchSytemDictionary:` ってなに？
+- `slideshow/config.js` の `searchSystemDictionary:` ってなに？
   - Dictionary.app でも自動で単語検索してくれる機能。つかうには
-  - `searchSytemDictionary: true` にする。
+  - `searchSystemDictionary: true` にする。
   - slideshow app 使っている時は、`python open-dict.py` で簡易プロキシ立ち上げ(上げっぱなしにしておく)
     - このプロキシは以下の事をやっている。
     - Chrome ブラウザから直接 `dict://{word}` を開けないので、`http` にしている

@@ -77,11 +77,8 @@ class App {
       if (Config.playAudio) this.playAudio()
     }
 
-    if (word && Config.searchSytemDictionary) {
-      const url = `http://127.0.0.1:8000/${word}`
-      const xhr = new XMLHttpRequest()
-      xhr.open('GET', url, true)
-      xhr.send()
+    if (word && Config.searchSystemDictionary) {
+      this.searchSystemDictionary(word)
     }
 
     this.renderProgress()
@@ -200,8 +197,8 @@ class App {
   }
 
   searchImageNow () {
-    const word = this.getCard()
-    if (word && word.word) {
+    const card = this.getCard()
+    if (card && card.word) {
       const a = document.getElementById('image-search')
       a.href = 'https://www.google.com/search?gl=us&hl=en&pws=0&gws_rd=cr&tbm=isch&q=' + word.word
       a.click()
@@ -268,10 +265,40 @@ class App {
     localStorage[SERVICE_NAME] = JSON.stringify(this.getState())
   }
 
-  screenCaptureMode() {
+  screenCaptureMode () {
     // Disable unnecessary feature to not disturb screen capture for movie by Selenium.
     this.defaultVisible = { word: true, definition: true, caption: true, image: true }
     Config = DefaultConfig
+  }
+
+  searchSystemDictionarySimple (word = (this.getCard() || {}).word) {
+    if (!word) return
+    // Works, but user need to manually re-focus to Chrome.
+    this.giveUpProxy = true
+    const a = document.getElementById('dict-search')
+    a.href = 'dict://' + word
+    a.click()
+  }
+
+  searchSystemDictionary (word = (this.getCard() || {}).word) {
+    if (!word) return
+
+    if (this.localProxyConnectionFailed) {
+      this.searchSystemDictionarySimple(word)
+      return
+    }
+    const url = `http://127.0.0.1:8000/${word}`
+    const xhr = new XMLHttpRequest()
+    xhr.onreadystatechange = event => {
+      if (xhr.readyState === 4) {
+        if (xhr.status !== 200) {
+          this.localProxyConnectionFailed = true
+          this.searchSystemDictionarySimple(word)
+        }
+      }
+    }
+    xhr.open('GET', url, true)
+    xhr.send()
   }
 }
 
@@ -281,7 +308,7 @@ const SERVICE_NAME = 't9md/cram-vocabulary'
 
 let Config = {}
 const DefaultConfig = {
-  searchSytemDictionary: false,
+  searchSystemDictionary: false,
   playAudio: false
 }
 
@@ -305,7 +332,8 @@ let DefaultKeymap = {
   Enter: 'next',
   // Backspace: 'delete-current-word',
   '?': 'show-help',
-  p: 'play-or-stop-audio'
+  p: 'play-or-stop-audio',
+  d: 'search-system-dictionary'
 }
 
 const Commands = {
@@ -320,6 +348,7 @@ const Commands = {
   'delete-current-word': () => app.deleteCurrentWord(),
   'undo-deletion': () => app.undoDeletion(),
   'search-image-now': () => app.searchImageNow(),
+  'search-system-dictionary': () => app.searchSystemDictionary(),
   'show-help': () => app.showHelp(),
   'scroll-to-top': () => window.scrollTo(0, 0),
   'scroll-to-word-list': () => document.getElementById('words-container').scrollIntoView(),

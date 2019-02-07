@@ -32,6 +32,10 @@ a:hover {
   display: none;
 }
 
+#dict-search {
+  display: none;
+}
+
 .caption-item {
   color: white;
   background-color: black;
