@@ -318,7 +318,7 @@ let DefaultKeymap = {
   ArrowUp: 'previous-card',
   ArrowDown: 'next-card',
   ArrowRight: 'next',
-  ArrowLeft: 'delete-current-word',
+  ArrowLeft: 'previous-card',
   s: 'search-image-now',
   k: 'previous-card',
   j: 'next-card',
