@@ -200,7 +200,7 @@ class App {
     const card = this.getCard()
     if (card && card.word) {
       const a = document.getElementById('image-search')
-      a.href = 'https://www.google.com/search?gl=us&hl=en&pws=0&gws_rd=cr&tbm=isch&q=' + word.word
+      a.href = 'https://www.google.com/search?gl=us&hl=en&pws=0&gws_rd=cr&tbm=isch&q=' + card.word
       a.click()
     }
   }
