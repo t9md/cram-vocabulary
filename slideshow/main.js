@@ -26,7 +26,7 @@ function getRandom (array, count) {
   return result
 }
 
-function buildQuizeChoice (choices, total, answerIndex) {
+function buildQuizeChoices (choices, total, answerIndex) {
   const answer = choices.splice(answerIndex, 1)
   choices = getRandom(choices, total - 1)
   const answerInsertIndex = Math.floor(Math.random() * total)
@@ -44,7 +44,6 @@ class App {
     // See https://developers.google.com/web/updates/2017/09/autoplay-policy-changes
     this.initialized = false
     this.cardProceeded = false
-    this.quizMode = false
   }
 
   getCardIndexFor (where) {
@@ -113,9 +112,9 @@ class App {
       document.getElementById('definition').innerText = definition.replace(/<br>/g, '\n')
       this.updateFieldVisibility(this.defaultVisible)
 
-      if (this.quizMode) {
+      if (this.isQuizMode()) {
         this.currentChoices = this.getQuizChoices(4, this.index)
-        document.getElementById(this.quizChoceField).innerHTML = buildQuizElements(this.currentChoices)
+        document.getElementById(this.quizChoiceField).innerHTML = buildQuizElements(this.currentChoices)
       }
     }
 
@@ -124,17 +123,20 @@ class App {
     }
 
     this.cardProceeded = false
+    this.cardItemVisibilityManuallyChanged = false
     this.renderProgress()
   }
 
   answerQuiz (choice) {
-    if (!this.quizMode) {
-      return
-    }
-    document.getElementById(this.quizChoceField).innerHTML = buildQuizElements(this.currentChoices, choice - 1)
+    if (!this.isQuizMode()) return
+
+    const element = document.getElementById(this.quizChoiceField)
+    element.innerHTML = buildQuizElements(this.currentChoices, choice - 1)
     if (Config.playAudio) {
-      this.playAudio(this.quizChoceField === 'word' ? 1 : 2)
+      this.playAudio(this.quizChoiceField === 'word' ? 1 : 2)
     }
+    this.currentChoices.answered = true
+    this.next(true)
   }
 
   renderProgress () {
@@ -168,10 +170,10 @@ class App {
 
     if (Config.playAudio) {
       let audioFields = []
-      if (!wordWasVisible && this.isVisible('word') && this.quizChoceField !== 'word') {
+      if (!wordWasVisible && this.isVisible('word') && this.quizChoiceField !== 'word') {
         audioFields.push(1)
       }
-      if (!definitionWasVisible && this.isVisible('definition') && this.quizChoceField !== 'definition') {
+      if (!definitionWasVisible && this.isVisible('definition') && this.quizChoiceField !== 'definition') {
         audioFields.push(2)
       }
 
@@ -190,6 +192,13 @@ class App {
     this.updateFieldVisibility(obj)
   }
 
+  toggleShowOnce (id) {
+    const obj = {}
+    obj[id] = !this.isVisible(id)
+    this.updateFieldVisibility(obj)
+    this.cardItemVisibilityManuallyChanged = true
+  }
+
   // for caption, word, definition
   isVisible (id) {
     const element = document.getElementById(id)
@@ -201,23 +210,28 @@ class App {
     }
   }
 
-  next () {
-    const captionStyle = styleForId('caption')
+  next (stayAtSameCard = false) {
     this.cardProceeded = true
 
-    if (!this.isVisible('caption')) {
+    const canChange = !this.cardItemVisibilityManuallyChanged
+    if (canChange && !this.isVisible('caption')) {
       this.updateFieldVisibility({ caption: true })
       return
     }
-    if (!document.body.style.backgroundImage) {
+    if (canChange && !document.body.style.backgroundImage) {
       this.updateFieldVisibility({ image: true })
       return
     }
-    if (!this.isVisible('word') || !this.isVisible('definition')) {
+    if (canChange && (!this.isVisible('word') || !this.isVisible('definition'))) {
       this.updateFieldVisibility({ word: true, definition: true })
       return
     }
-    if (this.index < this.wordList.length - 1) {
+
+    if (this.isQuizMode() && !this.currentChoices.answered) {
+      this.answerQuiz(-1)
+      return
+    }
+    if (!stayAtSameCard && this.index < this.wordList.length - 1) {
       this.setCard('next')
     }
   }
@@ -309,13 +323,24 @@ class App {
         definition: false,
         caption: false,
         image: true
-      }
+      },
+      quizChoiceField: null
     }
   }
 
   setState (state = {}) {
     Object.assign(this, this.getDefaultState(), state)
+    if (this.quizChoiceField) {
+      document.getElementById(this.quizChoiceField).classList.add('quiz')
+    } else {
+      document.getElementById('word').classList.remove('quiz')
+      document.getElementById('definition').classList.remove('quiz')
+    }
     this.refresh()
+  }
+
+  updateState (state = {}) {
+    this.setState(Object.assign(this.getState(), state))
   }
 
   getState () {
@@ -324,7 +349,8 @@ class App {
       wordList: this.wordList,
       wordListFilename: this.wordListFilename,
       removeHistory: this.removeHistory,
-      defaultVisible: this.defaultVisible
+      defaultVisible: this.defaultVisible,
+      quizChoiceField: this.quizChoiceField
     }
   }
 
@@ -337,10 +363,11 @@ class App {
       }
     }
 
-    this.setState({
+    this.updateState({
       index: 0,
       wordList: list,
-      wordListFilename: filename
+      wordListFilename: filename,
+      removeHistory: []
     })
   }
 
@@ -366,27 +393,21 @@ class App {
   }
 
   getQuizChoices (count, answerIndex) {
-    return buildQuizeChoice(this.choices.slice(), count, answerIndex)
+    if (!this.choices) {
+      this.choices = this.wordList.map(item => item[this.quizChoiceField])
+    }
+    return buildQuizeChoices(this.choices.slice(), count, answerIndex)
   }
 
-  setQuizMode (choiceField) {
-    if (this.quizChoceField) {
-      document.getElementById(this.quizChoceField).classList.remove('quiz')
-
-      if (choiceField === this.quizChoceField) {
-        this.quizChoceField = null
-        this.quizMode = false
-        this.choices = null
-        this.setCard('refresh')
-        return
-      }
+  toggleQuizMode (quizChoiceField) {
+    if (this.quizChoiceField && quizChoiceField === this.quizChoiceField) {
+      quizChoiceField = null
     }
+    this.updateState({ quizChoiceField: quizChoiceField })
+  }
 
-    document.getElementById(choiceField).classList.add('quiz')
-    this.quizChoceField = choiceField
-    this.quizMode = true
-    this.choices = this.wordList.map(item => item[choiceField])
-    this.setCard('refresh')
+  isQuizMode () {
+    return this.quizChoiceField != null
   }
 
   searchSystemDictionarySimple (word = (this.getCard() || {}).word) {
@@ -466,8 +487,8 @@ const Commands = {
   'answer-quiz-2': () => app.answerQuiz(2),
   'answer-quiz-3': () => app.answerQuiz(3),
   'answer-quiz-4': () => app.answerQuiz(4),
-  'quiz-word': () => app.setQuizMode('word'),
-  'quiz-definition': () => app.setQuizMode('definition'),
+  'quiz-word': () => app.toggleQuizMode('word'),
+  'quiz-definition': () => app.toggleQuizMode('definition'),
   'first-card': () => app.setCard('top'),
   'next-card': () => app.setCard('next'),
   'previous-card': () => app.setCard('previous'),
@@ -476,6 +497,10 @@ const Commands = {
   'toggle-image': () => app.toggleShow('image'),
   'toggle-word': () => app.toggleShow('word'),
   'toggle-definition': () => app.toggleShow('definition'),
+  'toggle-caption-once': () => app.toggleShowOnce('caption'),
+  'toggle-image-once': () => app.toggleShowOnce('image'),
+  'toggle-word-once': () => app.toggleShowOnce('word'),
+  'toggle-definition-once': () => app.toggleShowOnce('definition'),
   'toggle-caption': () => app.toggleShow('caption'),
   'delete-current-word': () => app.deleteCurrentWord(),
   'undo-deletion': () => app.undoDeletion(),
@@ -517,7 +542,6 @@ function initKeyboad () {
       // To skip when modifier is solely pressed, it result in such as 'Control-Controle', 'Meta-Meta'.
       return
     }
-    // console.log(keySignature);
 
     if (keySignature in Keymap) {
       event.preventDefault()
@@ -568,7 +592,6 @@ function initDoubleClickOfTextArea () {
 }
 
 function buildQuizElements ({ answerIndex, choices }, userAnsweredIndex = null) {
-  console.log({ answerIndex })
   const results = []
   for (let i = 0; i < choices.length; i++) {
     let html = ''
