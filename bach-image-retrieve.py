@@ -32,7 +32,7 @@ def save_snapshot(driver, word, idx):
         #     os.remove(fname)
 
     time.sleep(1)
-    driver.get('https://www.google.com/search?gl=us&hl=en&pws=0&gws_rd=cr&tbm=isch&q=' + word)
+    driver.get('https://www.google.com/search?gl=us&hl=en&pws=0&gws_rd=cr&tbm=isch&safe=active&q=' + word)
     element = driver.find_element_by_id("res")
     ActionChains(driver).move_to_element(element).perform()
     driver.execute_script("document.body.style.overflow = 'hidden';")
