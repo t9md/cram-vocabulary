@@ -4,5 +4,3 @@
 **/*.wav
 **/*.png
 node_modules
-slideshow/config.js
-slideshow/user.css
