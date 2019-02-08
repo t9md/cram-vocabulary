@@ -15,9 +15,9 @@ function escapeHtml (html) {
 
 class App {
   constructor () {
-    // Audio.play() result in exception when it is called with no user interaction after window.load
+    // [BUG] Audio.play() result in exception when it is called with no user interaction after window.load
     // See https://developers.google.com/web/updates/2017/09/autoplay-policy-changes
-    this.veryFirstAudioPlay = true
+    this.initialized = false
     this.cardProceeded = false
   }
 
@@ -44,27 +44,39 @@ class App {
     else this.audio.pause()
   }
 
-  playAudio () {
-    if (this.veryFirstAudioPlay) {
-      this.veryFirstAudioPlay = false
-      return
-    }
+  playAudio (...fieldNumbers) {
+    if (!this.initialized) return
+
     // Stop previous sound before playing new one.
-    if (this.audio && !this.audio.paused) this.audio.pause()
+    if (this.audio) {
+      this.audio.pause()
+      this.audio.onended = null
+      this.audio = null
+    }
 
     const word = this.getCard().word
-    if (!word) {
-      this.audio = null
-      return
-    }
+    if (!word) return
 
-    this.audio = new Audio(`sounds/${word}.wav`)
-    this.audio.play()
+    const audioFiles = fieldNumbers.map(n => this.getAudioFile(word, n)).filter(v => v)
+
+    const playAudios = files => {
+      if (files.length) {
+        this.audio = new Audio(files.shift())
+        this.audio.onended = () => playAudios(files)
+        this.audio.play()
+      }
+    }
+    playAudios(audioFiles)
+  }
+
+  getAudioFile (word, fieldNo) {
+    return `sounds/${word}-${fieldNo}.wav`
   }
 
   setCard (where) {
     this.index = this.getCardIndexFor(where)
     const { word = '', definition = '' } = this.getCard()
+    this.updateFieldVisibility({ caption: false, word: false, definition: false })
 
     if (!word) {
       document.getElementById('word').innerText = 'EMPTY!'
@@ -74,8 +86,6 @@ class App {
       document.getElementById('word').innerText = word
       document.getElementById('definition').innerText = definition.replace(/<br>/g, '\n')
       this.updateFieldVisibility(this.defaultVisible)
-
-      if (Config.playAudio) this.playAudio()
     }
 
     if (word && Config.searchSystemDictionary) {
@@ -98,6 +108,9 @@ class App {
   }
 
   updateFieldVisibility (state) {
+    const wordWasVisible = this.isVisible('word')
+    const definitionWasVisible = this.isVisible('definition')
+
     for (const field of Object.keys(state)) {
       const value = state[field]
       switch (field) {
@@ -111,6 +124,17 @@ class App {
           styleForId(field).visibility = value ? '' : 'hidden'
       }
     }
+
+    if (Config.playAudio) {
+      let audioFields = []
+      if (!wordWasVisible && this.isVisible('word')) audioFields.push(1)
+      if (!definitionWasVisible && this.isVisible('definition')) audioFields.push(2)
+
+      audioFields = audioFields.filter(v => Config.playAudioFields.includes(v))
+      if (audioFields.length) {
+        this.playAudio(...audioFields)
+      }
+    }
   }
 
   toggleShow (field) {
@@ -121,19 +145,30 @@ class App {
     this.updateFieldVisibility(obj)
   }
 
+  // for caption, word, definition
+  isVisible (id) {
+    const element = document.getElementById(id)
+    if (id === 'caption') {
+      return element.style.display !== 'none'
+    } else {
+      // Check parent's(= caption) visibility and element's itself.
+      return element.offsetParent !== null && element.style.visibility !== 'hidden'
+    }
+  }
+
   next () {
     const captionStyle = styleForId('caption')
     this.cardProceeded = true
 
-    if (captionStyle.display === 'none') {
-      captionStyle.display = 'block'
+    if (!this.isVisible('caption')) {
+      this.updateFieldVisibility({ caption: true })
       return
     }
     if (!document.body.style.backgroundImage) {
       this.updateFieldVisibility({ image: true })
       return
     }
-    if (styleForId('word').visibility === 'hidden' || styleForId('definition').visibility === 'hidden') {
+    if (!this.isVisible('word') || !this.isVisible('definition')) {
       this.updateFieldVisibility({ word: true, definition: true })
       return
     }
@@ -271,6 +306,7 @@ class App {
       state = {}
     }
     this.setState(state)
+    this.initialized = true
   }
 
   save () {
@@ -321,7 +357,8 @@ const SERVICE_NAME = 't9md/cram-vocabulary'
 let Config = {}
 const DefaultConfig = {
   searchSystemDictionary: false,
-  playAudio: false
+  playAudio: false,
+  playAudioFields: [1]
 }
 
 let Keymap = {}

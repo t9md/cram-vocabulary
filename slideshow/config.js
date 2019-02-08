@@ -1,7 +1,8 @@
 // Configuration
 // ===================
 // Config.searchSystemDictionary = false // macOS only
-// Config.playAudio = true // play `sounds/${word}.wav`
+// Config.playAudio = true  // play `sounds/${word}-${fieldNo}.wav`
+// Config.playAudioFields = [1, 2] // Set fields you want to play.
 
 // Keymap
 // ===================
