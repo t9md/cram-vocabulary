@@ -18,6 +18,7 @@ class App {
     // Audio.play() result in exception when it is called with no user interaction after window.load
     // See https://developers.google.com/web/updates/2017/09/autoplay-policy-changes
     this.veryFirstAudioPlay = true
+    this.cardProceeded = false
   }
 
   getCardIndexFor (where) {
@@ -81,6 +82,7 @@ class App {
       this.searchSystemDictionary(word)
     }
 
+    this.cardProceeded = false
     this.renderProgress()
   }
 
@@ -121,6 +123,8 @@ class App {
 
   next () {
     const captionStyle = styleForId('caption')
+    this.cardProceeded = true
+
     if (captionStyle.display === 'none') {
       captionStyle.display = 'block'
       return
@@ -135,6 +139,14 @@ class App {
     }
     if (this.index < this.wordList.length - 1) {
       this.setCard('next')
+    }
+  }
+
+  previous () {
+    if (this.cardProceeded) {
+      this.setCard('refresh')
+    } else {
+      app.setCard('previous')
     }
   }
 
@@ -318,7 +330,7 @@ let DefaultKeymap = {
   ArrowUp: 'previous-card',
   ArrowDown: 'next-card',
   ArrowRight: 'next',
-  ArrowLeft: 'previous-card',
+  ArrowLeft: 'previous',
   s: 'search-image-now',
   k: 'previous-card',
   j: 'next-card',
@@ -341,6 +353,7 @@ const Commands = {
   'next-card': () => app.setCard('next'),
   'previous-card': () => app.setCard('previous'),
   next: () => app.next(),
+  previous: () => app.previous(),
   'toggle-image': () => app.toggleShow('image'),
   'toggle-word': () => app.toggleShow('word'),
   'toggle-definition': () => app.toggleShow('definition'),
