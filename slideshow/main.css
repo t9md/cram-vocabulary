@@ -39,7 +39,7 @@ a:hover {
 .caption-item {
   color: white;
   background-color: black;
-  padding: 5px 10px;
+  padding: 5px 30px;
   opacity: 0.6;
   border-radius: 10px;
 }
@@ -56,6 +56,12 @@ a:hover {
 
 #word {
   font-size: 120px;
+  display: inline-block;
+}
+#word.quiz {
+  font-size: 50px;
+  text-align: left;
+  opacity: 0.7;
 }
 
 #definition {
@@ -64,6 +70,19 @@ a:hover {
   margin-top: 10px;
   max-width: 20em;
 }
+#definition.quiz {
+  font-size: 40px;
+  text-align: left;
+  opacity: 0.7;
+}
+
+.correct {
+  color: green;
+}
+.incorrect {
+  color: red;
+}
+
 
 #file-area {
   width: 100%;

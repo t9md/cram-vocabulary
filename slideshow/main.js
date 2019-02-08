@@ -13,12 +13,38 @@ function escapeHtml (html) {
   return p.innerHTML
 }
 
+function getRandom (array, count) {
+  const result = new Array(count)
+  let availableCounts = array.length
+  const taken = new Array(availableCounts)
+  if (count > availableCounts) throw new RangeError('getRandom: more elements taken than available')
+  while (count--) {
+    const x = Math.floor(Math.random() * availableCounts)
+    result[count] = array[x in taken ? taken[x] : x]
+    taken[x] = --availableCounts in taken ? taken[availableCounts] : availableCounts
+  }
+  return result
+}
+
+function buildQuizeChoice (choices, total, answerIndex) {
+  const answer = choices.splice(answerIndex, 1)
+  choices = getRandom(choices, total - 1)
+  const answerInsertIndex = Math.floor(Math.random() * total)
+  choices.splice(answerInsertIndex, 0, answer)
+
+  return {
+    choices: choices,
+    answerIndex: answerInsertIndex
+  }
+}
+
 class App {
   constructor () {
     // [BUG] Audio.play() result in exception when it is called with no user interaction after window.load
     // See https://developers.google.com/web/updates/2017/09/autoplay-policy-changes
     this.initialized = false
     this.cardProceeded = false
+    this.quizMode = false
   }
 
   getCardIndexFor (where) {
@@ -83,9 +109,14 @@ class App {
       document.getElementById('definition').innerHTML = '&#8595; Scroll down and drop your file.'
       this.updateFieldVisibility({ word: true, definition: true, caption: true, image: false })
     } else {
-      document.getElementById('word').innerText = word
+      document.getElementById('word').innerHTML = '<tt>' + word + '</tt>'
       document.getElementById('definition').innerText = definition.replace(/<br>/g, '\n')
       this.updateFieldVisibility(this.defaultVisible)
+
+      if (this.quizMode) {
+        this.currentChoices = this.getQuizChoices(4, this.index)
+        document.getElementById(this.quizChoceField).innerHTML = buildQuizElements(this.currentChoices)
+      }
     }
 
     if (word && Config.searchSystemDictionary) {
@@ -94,6 +125,16 @@ class App {
 
     this.cardProceeded = false
     this.renderProgress()
+  }
+
+  answerQuiz (choice) {
+    if (!this.quizMode) {
+      return
+    }
+    document.getElementById(this.quizChoceField).innerHTML = buildQuizElements(this.currentChoices, choice - 1)
+    if (Config.playAudio) {
+      this.playAudio(this.quizChoceField === 'word' ? 1 : 2)
+    }
   }
 
   renderProgress () {
@@ -127,8 +168,12 @@ class App {
 
     if (Config.playAudio) {
       let audioFields = []
-      if (!wordWasVisible && this.isVisible('word')) audioFields.push(1)
-      if (!definitionWasVisible && this.isVisible('definition')) audioFields.push(2)
+      if (!wordWasVisible && this.isVisible('word') && this.quizChoceField !== 'word') {
+        audioFields.push(1)
+      }
+      if (!definitionWasVisible && this.isVisible('definition') && this.quizChoceField !== 'definition') {
+        audioFields.push(2)
+      }
 
       audioFields = audioFields.filter(v => Config.playAudioFields.includes(v))
       if (audioFields.length) {
@@ -247,7 +292,8 @@ class App {
     const card = this.getCard()
     if (card && card.word) {
       const a = document.getElementById('image-search')
-      a.href = 'https://www.google.com/search?gl=us&hl=en&pws=0&gws_rd=cr&tbm=isch&q=' + card.word
+      const googelImage = 'https://www.google.com/search?gl=us&hl=en&pws=0&gws_rd=cr&tbm=isch&safe=active&q='
+      a.href = googelImage + card.word
       a.click()
     }
   }
@@ -319,6 +365,30 @@ class App {
     Config = DefaultConfig
   }
 
+  getQuizChoices (count, answerIndex) {
+    return buildQuizeChoice(this.choices.slice(), count, answerIndex)
+  }
+
+  setQuizMode (choiceField) {
+    if (this.quizChoceField) {
+      document.getElementById(this.quizChoceField).classList.remove('quiz')
+
+      if (choiceField === this.quizChoceField) {
+        this.quizChoceField = null
+        this.quizMode = false
+        this.choices = null
+        this.setCard('refresh')
+        return
+      }
+    }
+
+    document.getElementById(choiceField).classList.add('quiz')
+    this.quizChoceField = choiceField
+    this.quizMode = true
+    this.choices = this.wordList.map(item => item[choiceField])
+    this.setCard('refresh')
+  }
+
   searchSystemDictionarySimple (word = (this.getCard() || {}).word) {
     if (!word) return
     // Works, but user need to manually re-focus to Chrome.
@@ -371,21 +441,33 @@ let DefaultKeymap = {
   s: 'search-image-now',
   k: 'previous-card',
   j: 'next-card',
-  i: 'toggle-image',
   n: 'next',
-  '1': 'toggle-word',
-  '2': 'toggle-definition',
+  'Control-1': 'toggle-word',
+  'Control-2': 'toggle-definition',
+  'Control-t': 'toggle-caption',
+  'Control-i': 'toggle-image',
+  '1': 'answer-quiz-1',
+  '2': 'answer-quiz-2',
+  '3': 'answer-quiz-3',
+  '4': 'answer-quiz-4',
   '-': 'delete-current-word',
-  t: 'toggle-caption',
   u: 'undo-deletion',
   Enter: 'next',
   // Backspace: 'delete-current-word',
   '?': 'show-help',
   p: 'play-or-stop-audio',
-  d: 'search-system-dictionary'
+  d: 'search-system-dictionary',
+  q: 'quiz-definition',
+  Q: 'quiz-word'
 }
 
 const Commands = {
+  'answer-quiz-1': () => app.answerQuiz(1),
+  'answer-quiz-2': () => app.answerQuiz(2),
+  'answer-quiz-3': () => app.answerQuiz(3),
+  'answer-quiz-4': () => app.answerQuiz(4),
+  'quiz-word': () => app.setQuizMode('word'),
+  'quiz-definition': () => app.setQuizMode('definition'),
   'first-card': () => app.setCard('top'),
   'next-card': () => app.setCard('next'),
   'previous-card': () => app.setCard('previous'),
@@ -421,14 +503,26 @@ function initKeyboad () {
 
     // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/getModifierState
     const modifiers = ['Fn', 'Hyper', 'OS', 'Super', 'Win', 'Control', 'Alt', 'Meta']
-    if (modifiers.some(modifier => event.getModifierState(modifier))) {
-      return false
+    const modifierState = {}
+    for (const modifier of modifiers) {
+      modifierState[modifier] = event.getModifierState(modifier)
     }
 
-    if (event.key in Keymap) {
+    const modifierPrefix = Object.keys(modifierState)
+      .filter(k => modifierState[k])
+      .join('-')
+    let keySignature = (modifierPrefix ? modifierPrefix + '-' : '') + event.key
+
+    if (keySignature === keySignature + '-' + keySignature) {
+      // To skip when modifier is solely pressed, it result in such as 'Control-Controle', 'Meta-Meta'.
+      return
+    }
+    // console.log(keySignature);
+
+    if (keySignature in Keymap) {
       event.preventDefault()
       event.stopPropagation()
-      const command = Keymap[event.key]
+      const command = Keymap[keySignature]
       Commands[command](event)
     }
   }
@@ -471,6 +565,30 @@ function initDoubleClickOfTextArea () {
   }
   styleForId('words-container').top = window.screen.height + 'px'
   document.getElementById('active-words').addEventListener('dblclick', handleDoubleClick)
+}
+
+function buildQuizElements ({ answerIndex, choices }, userAnsweredIndex = null) {
+  console.log({ answerIndex })
+  const results = []
+  for (let i = 0; i < choices.length; i++) {
+    let html = ''
+    let className = ''
+    const content = choices[i]
+    if (userAnsweredIndex != null) {
+      if (i === answerIndex) {
+        className = 'correct'
+      } else if (i === userAnsweredIndex) {
+        className = 'incorrect'
+      }
+    }
+    if (className) {
+      html = `<li class="${className}">${content}</li>`
+    } else {
+      html = `<li>${content}</li>`
+    }
+    results.push(html)
+  }
+  return '<ol>' + results.join('\n') + '</ol>'
 }
 
 function initHelp () {
