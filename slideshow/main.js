@@ -77,7 +77,9 @@ class Quiz {
 
   showAnswer (userChoice) {
     this.answered = true
-    this.renderElements(userChoice - 1)
+    const userAnsweredIndex = userChoice - 1
+    this.answerWasCorrect = userAnsweredIndex === this.currentQuiz.answerIndex
+    this.renderElements(userAnsweredIndex)
   }
 
   contentFor(text) {
@@ -309,7 +311,11 @@ class App {
         this.updateFieldVisibility({ caption: false })
         return
       }
-      this.setCard('next')
+      if (this.quiz && Config.quizAutoDeleteCorrectCard && this.quiz.answerWasCorrect) {
+        this.deleteCurrentWord()
+      } else {
+        this.setCard('next')
+      }
     }
   }
 
@@ -510,7 +516,7 @@ class App {
 }
 
 // Main section
-//= =============================================
+//===============================================
 const SERVICE_NAME = 't9md/cram-vocabulary'
 
 let Config = {}
@@ -519,7 +525,8 @@ const DefaultConfig = {
   playAudio: false,
   playAudioFields: [1],
   quizChoiceCount: 4,
-  quizChoiceTextFilter: {}
+  quizChoiceTextFilter: {},
+  quizAutoDeleteCorrectCard: false
 }
 
 let Keymap = {}
@@ -541,6 +548,8 @@ let DefaultKeymap = {
   '2': 'answer-quiz-2',
   '3': 'answer-quiz-3',
   '4': 'answer-quiz-4',
+  '5': 'answer-quiz-5',
+  '6': 'answer-quiz-6',
   '-': 'delete-current-word',
   u: 'undo-deletion',
   Enter: 'next',

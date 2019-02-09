@@ -3,7 +3,8 @@
 // Config.searchSystemDictionary = false // macOS only
 // Config.playAudio = true  // play `sounds/${word}-${fieldNo}.wav`
 // Config.playAudioFields = [1, 2] // Set fields you want to play.
-// Config.quizChoiceCount = 4 // Controll number of choices for quiz.
+// Config.quizChoiceCount = 3 // Controll number of choices for quiz. Default 4
+// Config.quizAutoDeleteCorrectCard = true // When true automatically delete correct card on you proceed by `next` command.
 // Config.quizChoiceTextFilter = { // Advanced: If you want to modify text to display in quiz.
 //   definition: (content) => { // You can set filter for `definition` and  `word`.
 //     // Here pick, very 1st line and first field.
