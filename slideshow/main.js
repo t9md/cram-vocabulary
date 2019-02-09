@@ -55,7 +55,9 @@ class Quiz {
     }
 
     if (!this.allChoices) {
-      this.allChoices = app.wordList.map(item => item[this.quizChoiceField])
+      // Use both active and removed wordlist as quiz choice for better variation.
+      const words = app.wordList.concat(app.getRemovedWordList())
+      this.allChoices = words.map(item => item[this.quizChoiceField])
     }
     return this.allChoices.slice()
   }
