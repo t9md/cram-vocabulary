@@ -33,6 +33,7 @@ class Quiz {
     this.quizChoiceField = quizChoiceField
     this.allChoices = null
     this.answered = false
+    this.lastWordListLength = -1
     document.getElementById(quizChoiceField).classList.add('quiz')
 
     this.filter = Config.quizChoiceTextFilter[this.quizChoiceField]
@@ -47,6 +48,12 @@ class Quiz {
   }
 
   getAllChoices () {
+    // Auto invalidate cached result when word was deleted or deletion-undo-ed.
+    if (this.lastWordListLength !== app.wordList.length) {
+      this.lastWordListLength = app.wordList.length
+      this.allChoices = null
+    }
+
     if (!this.allChoices) {
       this.allChoices = app.wordList.map(item => item[this.quizChoiceField])
     }
