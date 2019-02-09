@@ -36,7 +36,7 @@ class Quiz {
     document.getElementById(quizChoiceField).classList.add('quiz')
 
     this.filter = Config.quizChoiceTextFilter[this.quizChoiceField]
-    if (typeof filter !== 'function') {
+    if (typeof this.filter !== 'function') {
       this.filter = null
     }
   }
