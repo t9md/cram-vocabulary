@@ -3,6 +3,14 @@
 // Config.searchSystemDictionary = false // macOS only
 // Config.playAudio = true  // play `sounds/${word}-${fieldNo}.wav`
 // Config.playAudioFields = [1, 2] // Set fields you want to play.
+// Config.quizChoiceCount = 4 // Controll number of choices for quiz.
+// Config.quizFilter = { // Advanced: If you want to modify text to display in quiz.
+//   definition: (content) => { // You can set filter for `definition` and  `word`.
+//     // Here pick, very 1st line and first field.
+//     // e.g. Pick "退位する" in when original content was "退位する、辞任する<br>【他】（王位）を退く、…を放棄する<br>"
+//     return content.split("<br>")[0].split("、")[0]
+//   }
+// }
 
 // Keymap
 // ===================
