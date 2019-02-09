@@ -26,15 +26,87 @@ function getRandom (array, count) {
   return result
 }
 
-function buildQuizeChoices (choices, total, answerIndex) {
-  const answer = choices.splice(answerIndex, 1)
-  choices = getRandom(choices, total - 1)
-  const answerInsertIndex = Math.floor(Math.random() * total)
-  choices.splice(answerInsertIndex, 0, answer)
+class Quiz {
+  constructor (app, quizChoiceField) {
+    this.choiceCount = Config.quizChoiceCount
+    this.app = app
+    this.quizChoiceField = quizChoiceField
+    this.allChoices = null
+    this.answered = false
+    document.getElementById(quizChoiceField).classList.add('quiz')
+  }
 
-  return {
-    choices: choices,
-    answerIndex: answerInsertIndex
+  destroy () {
+    document.getElementById('word').classList.remove('quiz')
+    document.getElementById('definition').classList.remove('quiz')
+  }
+
+  getAllChoices () {
+
+    if (!this.allChoices) {
+      let filter = Config.quizFilter[this.quizChoiceField]
+      if (typeof filter !== 'function') {
+        filter = null
+      }
+
+      this.allChoices = app.wordList.map(item => {
+        const content = item[this.quizChoiceField]
+        return filter ?  filter(content) : content
+      })
+    }
+    return this.allChoices.slice()
+  }
+
+  buildQuiz (cardIndex) {
+    let choices = this.getAllChoices()
+
+    // pluck answer from all choices.
+    const answer = choices.splice(cardIndex, 1)
+
+    // Pick 3 randomized choices.
+    choices = getRandom(choices, this.choiceCount - 1)
+
+    // Insert answer in random position, now 4 choices in total.
+    const answerIndex = Math.floor(Math.random() * this.choiceCount)
+    choices.splice(answerIndex, 0, answer)
+
+    return { choices: choices, answerIndex: answerIndex }
+  }
+
+  showQuestion (cardIndex) {
+    this.answered = false
+    this.currentQuiz = this.buildQuiz(cardIndex)
+    this.renderElements()
+  }
+
+  showAnswer (userChoice) {
+    this.answered = true
+    this.renderElements(userChoice - 1)
+  }
+
+  renderElements (userAnsweredIndex = null) {
+    const { choices, answerIndex } = this.currentQuiz
+    const results = []
+    for (let i = 0; i < choices.length; i++) {
+      let html = ''
+      let className = ''
+      const content = choices[i]
+      if (userAnsweredIndex != null) {
+        if (i === answerIndex) {
+          className = 'correct'
+        } else if (i === userAnsweredIndex) {
+          className = 'incorrect'
+        }
+      }
+      if (className) {
+        html = `<li class="${className}">${content}</li>`
+      } else {
+        html = `<li>${content}</li>`
+      }
+      results.push(html)
+    }
+    const html = '<ol>' + results.join('\n') + '</ol>'
+    document.getElementById(this.quizChoiceField).innerHTML = html
   }
 }
 
@@ -112,9 +184,8 @@ class App {
       document.getElementById('definition').innerText = definition.replace(/<br>/g, '\n')
       this.updateFieldVisibility(this.defaultVisible)
 
-      if (this.isQuizMode()) {
-        this.currentChoices = this.getQuizChoices(4, this.index)
-        document.getElementById(this.quizChoiceField).innerHTML = buildQuizElements(this.currentChoices)
+      if (this.quiz) {
+        this.quiz.showQuestion(this.index)
       }
     }
 
@@ -128,14 +199,11 @@ class App {
   }
 
   answerQuiz (choice) {
-    if (!this.isQuizMode()) return
-
-    const element = document.getElementById(this.quizChoiceField)
-    element.innerHTML = buildQuizElements(this.currentChoices, choice - 1)
+    if (!this.quiz) return
+    this.quiz.showAnswer(choice)
     if (Config.playAudio) {
       this.playAudio(this.quizChoiceField === 'word' ? 1 : 2)
     }
-    this.currentChoices.answered = true
     this.next(true)
   }
 
@@ -170,10 +238,12 @@ class App {
 
     if (Config.playAudio) {
       let audioFields = []
-      if (!wordWasVisible && this.isVisible('word') && this.quizChoiceField !== 'word') {
+      const canPlayWord = this.quizChoiceField !== 'word'
+      const canPlayDefinition = this.quizChoiceField !== 'definition'
+      if (canPlayWord && !wordWasVisible && this.isVisible('word')) {
         audioFields.push(1)
       }
-      if (!definitionWasVisible && this.isVisible('definition') && this.quizChoiceField !== 'definition') {
+      if (canPlayDefinition && !definitionWasVisible && this.isVisible('definition')) {
         audioFields.push(2)
       }
 
@@ -226,12 +296,17 @@ class App {
       this.updateFieldVisibility({ word: true, definition: true })
       return
     }
-
-    if (this.isQuizMode() && !this.currentChoices.answered) {
+    if (this.quiz && !this.quiz.answered) {
       this.answerQuiz(-1)
       return
     }
+
     if (!stayAtSameCard && this.index < this.wordList.length - 1) {
+      if (canChange && this.quiz && this.isVisible('caption')) {
+        this.cardItemVisibilityManuallyChanged = true
+        this.updateFieldVisibility({ caption: false })
+        return
+      }
       this.setCard('next')
     }
   }
@@ -330,11 +405,13 @@ class App {
 
   setState (state = {}) {
     Object.assign(this, this.getDefaultState(), state)
+
+    if (this.quiz) {
+      this.quiz.destroy()
+      this.quiz = null
+    }
     if (this.quizChoiceField) {
-      document.getElementById(this.quizChoiceField).classList.add('quiz')
-    } else {
-      document.getElementById('word').classList.remove('quiz')
-      document.getElementById('definition').classList.remove('quiz')
+      this.quiz = new Quiz(this, this.quizChoiceField)
     }
     this.refresh()
   }
@@ -392,22 +469,11 @@ class App {
     Config = DefaultConfig
   }
 
-  getQuizChoices (count, answerIndex) {
-    if (!this.choices) {
-      this.choices = this.wordList.map(item => item[this.quizChoiceField])
-    }
-    return buildQuizeChoices(this.choices.slice(), count, answerIndex)
-  }
-
   toggleQuizMode (quizChoiceField) {
     if (this.quizChoiceField && quizChoiceField === this.quizChoiceField) {
       quizChoiceField = null
     }
     this.updateState({ quizChoiceField: quizChoiceField })
-  }
-
-  isQuizMode () {
-    return this.quizChoiceField != null
   }
 
   searchSystemDictionarySimple (word = (this.getCard() || {}).word) {
@@ -449,7 +515,9 @@ let Config = {}
 const DefaultConfig = {
   searchSystemDictionary: false,
   playAudio: false,
-  playAudioFields: [1]
+  playAudioFields: [1],
+  quizChoiceCount: 4,
+  quizFilter: {},
 }
 
 let Keymap = {}
