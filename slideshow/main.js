@@ -34,6 +34,11 @@ class Quiz {
     this.allChoices = null
     this.answered = false
     document.getElementById(quizChoiceField).classList.add('quiz')
+
+    this.filter = Config.quizChoiceTextFilter[this.quizChoiceField]
+    if (typeof filter !== 'function') {
+      this.filter = null
+    }
   }
 
   destroy () {
@@ -42,17 +47,8 @@ class Quiz {
   }
 
   getAllChoices () {
-
     if (!this.allChoices) {
-      let filter = Config.quizFilter[this.quizChoiceField]
-      if (typeof filter !== 'function') {
-        filter = null
-      }
-
-      this.allChoices = app.wordList.map(item => {
-        const content = item[this.quizChoiceField]
-        return filter ?  filter(content) : content
-      })
+      this.allChoices = app.wordList.map(item => item[this.quizChoiceField])
     }
     return this.allChoices.slice()
   }
@@ -61,7 +57,7 @@ class Quiz {
     let choices = this.getAllChoices()
 
     // pluck answer from all choices.
-    const answer = choices.splice(cardIndex, 1)
+    const answer = choices.splice(cardIndex, 1)[0]
 
     // Pick 3 randomized choices.
     choices = getRandom(choices, this.choiceCount - 1)
@@ -84,15 +80,21 @@ class Quiz {
     this.renderElements(userChoice - 1)
   }
 
+  contentFor(text) {
+    return this.filter ? this.filter(text) : text
+  }
+
   renderElements (userAnsweredIndex = null) {
     const { choices, answerIndex } = this.currentQuiz
+
     const results = []
     for (let i = 0; i < choices.length; i++) {
       let html = ''
       let className = ''
-      const content = choices[i]
+      let content = this.contentFor(choices[i])
       if (userAnsweredIndex != null) {
         if (i === answerIndex) {
+          content = choices[i] // Show original content especially for answer.
           className = 'correct'
         } else if (i === userAnsweredIndex) {
           className = 'incorrect'
@@ -517,7 +519,7 @@ const DefaultConfig = {
   playAudio: false,
   playAudioFields: [1],
   quizChoiceCount: 4,
-  quizFilter: {},
+  quizChoiceTextFilter: {}
 }
 
 let Keymap = {}
