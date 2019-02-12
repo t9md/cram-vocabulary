@@ -91,7 +91,7 @@ class Quiz {
     this.renderElements(userAnsweredIndex)
   }
 
-  contentFor(text) {
+  contentFor (text) {
     return this.filter ? this.filter(text) : text
   }
 
@@ -100,6 +100,7 @@ class Quiz {
 
     const results = []
     for (let i = 0; i < choices.length; i++) {
+      const choiceNo = i + 1
       let html = ''
       let className = ''
       let content = this.contentFor(choices[i])
@@ -112,9 +113,9 @@ class Quiz {
         }
       }
       if (className) {
-        html = `<li class="${className}">${content}</li>`
+        html = `<li id="quiz-choice-${choiceNo}" class="${className}">${content}</li>`
       } else {
-        html = `<li>${content}</li>`
+        html = `<li id="quiz-choice-${choiceNo}" >${content}</li>`
       }
       results.push(html)
     }
@@ -195,9 +196,10 @@ class App {
     } else {
       document.getElementById('word').innerHTML = '<tt>' + word + '</tt>'
       document.getElementById('definition').innerText = definition.replace(/<br>/g, '\n')
-      this.updateFieldVisibility(this.defaultVisible)
-
-      if (this.quiz) {
+      if (!this.quiz) {
+        this.updateFieldVisibility(this.defaultVisible)
+      } else {
+        this.updateFieldVisibility({ word: true, definition: true, caption: true, image: false })
         this.quiz.showQuestion(this.index)
       }
     }
@@ -525,8 +527,10 @@ class App {
 }
 
 // Main section
-//===============================================
+//= ==============================================
 const SERVICE_NAME = 't9md/cram-vocabulary'
+let WORD_LIST = ''
+let WORD_LIST_FILE_NAME = 'preloaded-word-list'
 
 let Config = {}
 const DefaultConfig = {
@@ -601,13 +605,84 @@ const Commands = {
 }
 
 function initBodyClick () {
+  const wordElement = document.getElementById('word')
+  const definitionElement = document.getElementById('definition')
+  const captionElement = document.getElementById('caption')
+  const blankAreaOfCaptionElement = element => {
+    return captionElement.contains(element) && (!wordElement.contains(element) && !definitionElement.contains(element))
+  }
+
   const handleBodyClick = event => {
     const element = event.target
-    if (element === document.body || document.getElementById('caption').contains(element)) {
+    if (element === document.body || blankAreaOfCaptionElement(element)) {
       if (app.wordList) app.next()
     }
   }
-  document.body.addEventListener('click', handleBodyClick, 'false')
+  document.body.addEventListener('click', handleBodyClick, false)
+}
+
+function onTapEndEvent (element, singleTapCallback, doubleTapCallback) {
+  let moved = false
+  let doubletap = false
+  let timeoutID = null
+
+  const handleTouchStart = event => {
+    cancelEvent(event)
+    if (timeoutID) {
+      clearTimeout(timeoutID)
+      doubletap = true
+      timeoutID = null
+    }
+  }
+  const handleTouchMove = event => {
+    cancelEvent(event)
+    moved = true
+  }
+  const handleTouchEnd = event => {
+    cancelEvent(event)
+    if (!moved) {
+      if (doubletap) {
+        doubletap = false
+        doubleTapCallback(event)
+      } else {
+        timeoutID = setTimeout(function () {
+          if (singleTapCallback) singleTapCallback(event)
+          timeoutID = null
+        }, 100)
+      }
+    }
+    moved = false
+  }
+  element.addEventListener('touchstart', handleTouchStart, { passive: false })
+  element.addEventListener('touchmove', handleTouchMove, { passive: false })
+  element.addEventListener('touchend', handleTouchEnd, { passive: false })
+}
+
+function cancelEvent (event) {
+  event.preventDefault()
+  event.stopImmediatePropagation()
+}
+
+function onSimpleSingleTapEvent (element, callback) {
+  let moved = false
+
+  const handleTouchMove = event => {
+    cancelEvent(event)
+    moved = true
+  }
+  const handleTouchEnd = event => {
+    cancelEvent(event)
+    if (!moved) callback(event)
+    moved = false
+  }
+  element.addEventListener('touchmove', handleTouchMove)
+  element.addEventListener('touchend', handleTouchEnd)
+}
+
+function initTouchEvent () {
+  const handleSingleTap = event => app.next()
+  const handleDoubleTap = event => app.toggleQuizMode('definition')
+  onTapEndEvent(document.getElementById('progress-counter'), handleSingleTap, handleDoubleTap)
 }
 
 function initKeyboad () {
@@ -679,27 +754,22 @@ function initDoubleClickOfTextArea () {
   document.getElementById('active-words').addEventListener('dblclick', handleDoubleClick)
 }
 
-function buildQuizElements ({ answerIndex, choices }, userAnsweredIndex = null) {
-  const results = []
-  for (let i = 0; i < choices.length; i++) {
-    let html = ''
-    let className = ''
-    const content = choices[i]
-    if (userAnsweredIndex != null) {
-      if (i === answerIndex) {
-        className = 'correct'
-      } else if (i === userAnsweredIndex) {
-        className = 'incorrect'
-      }
+function initQuizChoiceClick (element) {
+  const handleAnswer = event => {
+    const match = event.target.id.match(/quiz-choice-(\d+)/)
+    if (match) {
+      app.answerQuiz(Number(match[1]))
     }
-    if (className) {
-      html = `<li class="${className}">${content}</li>`
-    } else {
-      html = `<li>${content}</li>`
-    }
-    results.push(html)
+    event.preventDefault()
+    event.stopImmediatePropagation()
   }
-  return '<ol>' + results.join('\n') + '</ol>'
+
+  const wordElement = document.getElementById('word')
+  const definitionElement = document.getElementById('definition')
+  wordElement.addEventListener('click', handleAnswer)
+  definitionElement.addEventListener('click', handleAnswer)
+  onSimpleSingleTapEvent(wordElement, handleAnswer)
+  onSimpleSingleTapEvent(definitionElement, handleAnswer)
 }
 
 function initHelp () {
@@ -735,12 +805,17 @@ window.onload = () => {
   document.getElementById('reset-app').addEventListener('click', () => app.setState({}))
   app.init()
   initBodyClick()
+  initTouchEvent()
+  initQuizChoiceClick()
   initKeyboad()
   initDropFile()
   initFileInput()
   initDoubleClickOfTextArea()
   initHelp()
   initDownload()
+  if (WORD_LIST) {
+    app.loadWordList(WORD_LIST, WORD_LIST_FILE_NAME)
+  }
 }
 
 window.onbeforeunload = event => {
