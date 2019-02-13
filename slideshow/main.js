@@ -1,5 +1,11 @@
-function getValidIndex (index, list) {
-  return Math.min(Math.max(index, 0), list.length - 1)
+function getValidIndex (list, index, allowWrap = false) {
+  if (!allowWrap) {
+    return Math.min(Math.max(index, 0), list.length - 1)
+  }
+  let validIndex = index % list.length
+  if (validIndex < 0) validIndex = list.length + validIndex
+
+  return validIndex
 }
 
 function styleForId (id) {
@@ -11,6 +17,22 @@ function escapeHtml (html) {
   const p = document.createElement('p')
   p.appendChild(text)
   return p.innerHTML
+}
+
+function shuffleArray (array) {
+  let currentIndex = array.length
+  let temporaryValue, randomIndex
+
+  // While there remain elements to shuffle...
+  while (currentIndex !== 0) {
+    randomIndex = Math.floor(Math.random() * currentIndex)
+    currentIndex -= 1
+
+    temporaryValue = array[currentIndex]
+    array[currentIndex] = array[randomIndex]
+    array[randomIndex] = temporaryValue
+  }
+  return array
 }
 
 function getRandom (array, count) {
@@ -141,11 +163,16 @@ class App {
     else if (where === 'previous') delta = -1
     else if (where === 'refresh') delta = 0
 
-    return getValidIndex(this.index + delta, this.wordList)
+    return getValidIndex(this.wordList, this.index + delta, Config.allowWrap)
   }
 
   getCard () {
     return this.wordList[this.index] || {}
+  }
+
+  shuffle () {
+    this.wordList = shuffleArray(this.wordList)
+    this.refresh()
   }
 
   playOrStopAudio () {
@@ -199,7 +226,7 @@ class App {
       if (!this.quiz) {
         this.updateFieldVisibility(this.defaultVisible)
       } else {
-        this.updateFieldVisibility({ word: true, definition: true, caption: true, image: false })
+        this.updateFieldVisibility({ word: true, definition: false, caption: true, image: false })
         this.quiz.showQuestion(this.index)
       }
     }
@@ -224,7 +251,7 @@ class App {
 
   renderProgress () {
     const total = this.wordList.length
-    const current = this.index + 1
+    const current = this.index + 1 || 0
     document.getElementById('progress-counter').innerText = `${current} / ${total}`
   }
 
@@ -303,6 +330,14 @@ class App {
       this.updateFieldVisibility({ caption: true })
       return
     }
+
+    if (this.quiz) {
+      if (canChange && (!this.isVisible('word') || !this.isVisible('definition'))) {
+        this.updateFieldVisibility({ word: true, definition: true })
+        return
+      }
+    }
+
     if (canChange && !document.body.style.backgroundImage) {
       this.updateFieldVisibility({ image: true })
       return
@@ -316,7 +351,7 @@ class App {
       return
     }
 
-    if (!stayAtSameCard && this.index < this.wordList.length - 1) {
+    if (!stayAtSameCard) {
       if (canChange && this.quiz && this.isVisible('caption')) {
         this.cardItemVisibilityManuallyChanged = true
         this.updateFieldVisibility({ caption: false })
@@ -539,7 +574,8 @@ const DefaultConfig = {
   playAudioFields: [1],
   quizChoiceCount: 4,
   quizChoiceTextFilter: {},
-  quizAutoDeleteCorrectCard: false
+  quizAutoDeleteCorrectCard: false,
+  allowWrap: true
 }
 
 let Keymap = {}
@@ -550,6 +586,7 @@ let DefaultKeymap = {
   ArrowRight: 'next',
   ArrowLeft: 'previous',
   s: 'search-image-now',
+  S: 'shuffle',
   k: 'previous-card',
   j: 'next-card',
   n: 'next',
@@ -561,8 +598,8 @@ let DefaultKeymap = {
   '2': 'answer-quiz-2',
   '3': 'answer-quiz-3',
   '4': 'answer-quiz-4',
-  '5': 'answer-quiz-5',
-  '6': 'answer-quiz-6',
+  // '5': 'answer-quiz-5',
+  // '6': 'answer-quiz-6',
   '-': 'delete-current-word',
   u: 'undo-deletion',
   Enter: 'next',
@@ -601,7 +638,8 @@ const Commands = {
   'show-help': () => app.showHelp(),
   'scroll-to-top': () => window.scrollTo(0, 0),
   'scroll-to-word-list': () => document.getElementById('words-container').scrollIntoView(),
-  'play-or-stop-audio': () => app.playOrStopAudio()
+  'play-or-stop-audio': () => app.playOrStopAudio(),
+  shuffle: () => app.shuffle()
 }
 
 function initBodyClick () {
