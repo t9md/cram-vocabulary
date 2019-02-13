@@ -145,6 +145,13 @@ class Quiz {
   }
 }
 
+const ImageSearchEngine = {
+  google: 'https://www.google.com/search?gl=us&hl=en&pws=0&gws_rd=cr&tbm=isch&safe=active&q=%s',
+  google_unsafe: 'https://www.google.com/search?gl=us&hl=en&pws=0&gws_rd=cr&tbm=isch&q=%s',
+  bing: 'https://www.bing.com/images/search?safeSearch=Moderate&mkt=en-US&q=%s',
+  bing_unsafe: 'https://www.bing.com/images/search?safeSearch=Off&mkt=en-US&q=%s'
+}
+
 class App {
   constructor () {
     // [BUG] Audio.play() result in exception when it is called with no user interaction after window.load
@@ -439,12 +446,13 @@ class App {
     this.renderWordList('removed-words', this.getRemovedWordList())
   }
 
-  searchImageNow () {
+  searchImage (engine) {
+    if (!(engine in ImageSearchEngine)) return
+
     const card = this.getCard()
     if (card && card.word) {
       const a = document.getElementById('image-search')
-      const googelImage = 'https://www.google.com/search?gl=us&hl=en&pws=0&gws_rd=cr&tbm=isch&safe=active&q='
-      a.href = googelImage + card.word
+      a.href = ImageSearchEngine[engine].replace('%s', card.word)
       a.click()
     }
   }
@@ -593,7 +601,8 @@ let DefaultKeymap = {
   ArrowDown: 'next-card',
   ArrowRight: 'next',
   ArrowLeft: 'previous',
-  s: 'search-image-now',
+  s: 'search-image-by-google',
+  b: 'search-image-by-bing',
   S: 'shuffle',
   k: 'previous-card',
   j: 'next-card',
@@ -641,7 +650,10 @@ const Commands = {
   'toggle-caption': () => app.toggleShow('caption'),
   'delete-current-word': () => app.deleteCurrentWord(),
   'undo-deletion': () => app.undoDeletion(),
-  'search-image-now': () => app.searchImageNow(),
+  'search-image-by-google': () => app.searchImage('google'),
+  'search-image-by-google-unsafe': () => app.searchImage('google_unsafe'),
+  'search-image-by-bing': () => app.searchImage('bing'),
+  'search-image-by-bing-unsafe': () => app.searchImage('bing_unsafe'),
   'search-system-dictionary': () => app.searchSystemDictionary(),
   'show-help': () => app.showHelp(),
   'scroll-to-top': () => window.scrollTo(0, 0),
