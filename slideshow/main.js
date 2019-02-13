@@ -56,6 +56,7 @@ class Quiz {
     this.allChoices = null
     this.answered = false
     this.lastWordListLength = -1
+    this.cacheIsValid = true
     document.getElementById(quizChoiceField).classList.add('quiz')
 
     this.filter = Config.quizChoiceTextFilter[this.quizChoiceField]
@@ -69,13 +70,11 @@ class Quiz {
     document.getElementById('definition').classList.remove('quiz')
   }
 
-  getAllChoices () {
-    // Auto invalidate cached result when word was deleted or deletion-undo-ed.
-    if (this.lastWordListLength !== app.wordList.length) {
-      this.lastWordListLength = app.wordList.length
-      this.allChoices = null
-    }
+  invalidatCache () {
+    this.allChoices = null
+  }
 
+  getAllChoices () {
     if (!this.allChoices) {
       // Use both active and removed wordlist as quiz choice for better variation.
       const words = app.wordList.concat(app.getRemovedWordList())
@@ -171,8 +170,9 @@ class App {
   }
 
   shuffle () {
-    this.wordList = shuffleArray(this.wordList)
-    this.refresh()
+    this.mutateWordList(() => {
+      this.wordList = shuffleArray(this.wordList)
+    })
   }
 
   playOrStopAudio () {
@@ -389,9 +389,10 @@ class App {
 
   deleteCurrentWord () {
     if (this.wordList.length) {
-      const removed = this.wordList.splice(this.index, 1)[0]
-      this.removeHistory.push({ item: removed, index: this.index })
-      this.refresh()
+      this.mutateWordList(() => {
+        const removed = this.wordList.splice(this.index, 1)[0]
+        this.removeHistory.push({ item: removed, index: this.index })
+      })
     }
   }
 
@@ -401,12 +402,19 @@ class App {
     this.renderRemovedWordList()
   }
 
+  mutateWordList (callback) {
+    callback()
+    if (this.quiz) this.quiz.invalidatCache()
+    this.refresh()
+  }
+
   undoDeletion () {
     if (this.removeHistory.length) {
       const { item, index } = this.removeHistory.pop()
-      this.wordList.splice(index, 0, item)
       this.index = index
-      this.refresh()
+      this.mutateWordList(() => {
+        this.wordList.splice(index, 0, item)
+      })
     }
   }
 
@@ -792,18 +800,22 @@ function initDoubleClickOfTextArea () {
   document.getElementById('active-words').addEventListener('dblclick', handleDoubleClick)
 }
 
-function initQuizChoiceClick (element) {
+function initFieldClick (element) {
+  const wordElement = document.getElementById('word')
+  const definitionElement = document.getElementById('definition')
+
   const handleAnswer = event => {
+    event.preventDefault()
+    event.stopImmediatePropagation()
     const match = event.target.id.match(/quiz-choice-(\d+)/)
     if (match) {
       app.answerQuiz(Number(match[1]))
+    } else {
+      const fieldNo = wordElement.contains(event.target) ? 1 : 2
+      app.playAudio(fieldNo)
     }
-    event.preventDefault()
-    event.stopImmediatePropagation()
   }
 
-  const wordElement = document.getElementById('word')
-  const definitionElement = document.getElementById('definition')
   wordElement.addEventListener('click', handleAnswer)
   definitionElement.addEventListener('click', handleAnswer)
   onSimpleSingleTapEvent(wordElement, handleAnswer)
@@ -844,7 +856,7 @@ window.onload = () => {
   app.init()
   initBodyClick()
   initTouchEvent()
-  initQuizChoiceClick()
+  initFieldClick()
   initKeyboad()
   initDropFile()
   initFileInput()
