@@ -389,10 +389,12 @@ class App {
         this.updateFieldVisibility({ caption: false })
         return
       }
-      let index = this.getCurrentImageIndex()
-      if (index < Config.imageDirectories.length - 1) {
-        this.updateFieldVisibility({ image: true }) // Show next image available
-        return
+      if (Config.rotateAllImageOnNext) {
+        let index = this.getCurrentImageIndex()
+        if (index < Config.imageDirectories.length - 1) {
+          this.updateFieldVisibility({ image: true }) // Show next image available
+          return
+        }
       }
 
       if (this.quiz && Config.quizAutoDeleteCorrectCard && this.quiz.answerWasCorrect) {
@@ -624,7 +626,8 @@ const DefaultConfig = {
   quizChoiceTextFilter: {},
   quizAutoDeleteCorrectCard: false,
   allowWrap: true,
-  imageDirectories: ['imgs']
+  imageDirectories: ['imgs'],
+  rotateAllImageOnNext: true
 }
 
 let Keymap = {}
