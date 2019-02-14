@@ -10,7 +10,8 @@ const DefaultConfig = {
   quizAutoDeleteCorrectCard: false,
   allowWrap: false, // When wordlist reached end, it auto wrap to first word.
   imageDirectories: ['imgs'], // You can specify multiple image directory then `r` to rotate it.
-  rotateAllImageOnNext: true // When you proceed card phase by `n`, it auto rotate all bg image available.
+  rotateAllImageOnNext: true, // When you proceed card phase by `n`, it auto rotate all bg image available.
+  hideCaptionOnEndOfNext: true // When you execute `next` it hide caption to allow you to see bg image clearly.
 }
 
 // Commands

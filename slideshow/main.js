@@ -384,7 +384,7 @@ class App {
     }
 
     if (!stayAtSameCard) {
-      if (canChange && this.quiz && this.isVisible('caption')) {
+      if (canChange && Config.hideCaptionOnEndOfNext && this.isVisible('caption')) {
         this.cardItemVisibilityManuallyChanged = true
         this.updateFieldVisibility({ caption: false })
         return
