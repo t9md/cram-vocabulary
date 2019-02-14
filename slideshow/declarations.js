@@ -59,7 +59,7 @@ let DefaultKeymap = {
   ArrowDown: 'next-card',
   ArrowRight: 'next',
   ArrowLeft: 'previous',
-  s: 'search-image-by-google',
+  g: 'search-image-by-google',
   G: 'search-image-by-google-unsafe',
   b: 'search-image-by-bing',
   B: 'search-image-by-bing-unsafe',

@@ -222,7 +222,7 @@ class App {
   setCard (where) {
     this.index = this.getCardIndexFor(where)
     const { word = '', definition = '' } = this.getCard()
-    this.updateFieldVisibility({ caption: false, word: false, definition: false })
+    this.updateFieldVisibility({ caption: false, word: false, definition: false, image: false })
 
     if (!word) {
       document.getElementById('word').innerText = 'EMPTY!'
