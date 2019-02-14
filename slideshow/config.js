@@ -1,5 +1,9 @@
 // Configuration
 // ===================
+// See following file for full list of available Config, Keymap, Command and also to get idea of how to configure it.
+//
+//  https://github.com/t9md/cram-vocabulary/blob/master/slideshow/declarations.js
+//
 // Config.searchSystemDictionary = false // macOS only
 // Config.playAudio = true  // play `sounds/${word}-${fieldNo}.wav`
 // Config.playAudioFields = [1, 2] // Set fields you want to play.
