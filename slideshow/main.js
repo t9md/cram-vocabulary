@@ -158,6 +158,7 @@ class App {
     // See https://developers.google.com/web/updates/2017/09/autoplay-policy-changes
     this.initialized = false
     this.cardProceeded = false
+    this.imageDirectoryIndex = 0
   }
 
   getCardIndexFor (where) {
@@ -262,9 +263,28 @@ class App {
     document.getElementById('progress-counter').innerText = `${current} / ${total}`
   }
 
-  getImageUrl () {
+  getNextImageUrl (allowWrap) {
     const word = this.getCard().word
-    return word ? `url('imgs/${this.getCard().word}.png')` : ''
+    if (!word) return ''
+
+    let index = this.getCurrentImageIndex()
+    if (index != null) {
+      index = getValidIndex(Config.imageDirectories, index + 1, allowWrap)
+    } else {
+      index = 0
+    }
+    return `url('${Config.imageDirectories[index]}/${word}.png')`
+  }
+
+  getCurrentImageIndex () {
+    const current = document.body.style.backgroundImage
+    if (!current) {
+      return null
+    }
+    const regex = new RegExp(`url\\("(.*)/${this.getCard().word}.png"\\)`)
+    const match = current.match(regex)
+    const currentDir = match[1]
+    return Config.imageDirectories.indexOf(currentDir)
   }
 
   updateFieldVisibility (state) {
@@ -275,7 +295,7 @@ class App {
       const value = state[field]
       switch (field) {
         case 'image':
-          document.body.style.backgroundImage = value ? this.getImageUrl() : ''
+          document.body.style.backgroundImage = value ? this.getNextImageUrl(value === 'rotate') : ''
           break
         case 'caption':
           styleForId(field).display = value ? 'block' : 'none'
@@ -301,6 +321,10 @@ class App {
         this.playAudio(...audioFields)
       }
     }
+  }
+
+  rotateImage () {
+    this.updateFieldVisibility({ image: 'rotate' })
   }
 
   toggleShow (field) {
@@ -349,6 +373,7 @@ class App {
       this.updateFieldVisibility({ image: true })
       return
     }
+
     if (canChange && (!this.isVisible('word') || !this.isVisible('definition'))) {
       this.updateFieldVisibility({ word: true, definition: true })
       return
@@ -364,6 +389,12 @@ class App {
         this.updateFieldVisibility({ caption: false })
         return
       }
+      let index = this.getCurrentImageIndex()
+      if (index < Config.imageDirectories.length - 1) {
+        this.updateFieldVisibility({ image: true }) // Show next image available
+        return
+      }
+
       if (this.quiz && Config.quizAutoDeleteCorrectCard && this.quiz.answerWasCorrect) {
         this.deleteCurrentWord()
       } else {
@@ -447,6 +478,7 @@ class App {
   }
 
   searchImage (engine) {
+    console.log(engine)
     if (!(engine in ImageSearchEngine)) return
 
     const card = this.getCard()
@@ -591,7 +623,8 @@ const DefaultConfig = {
   quizChoiceCount: 4,
   quizChoiceTextFilter: {},
   quizAutoDeleteCorrectCard: false,
-  allowWrap: true
+  allowWrap: true,
+  imageDirectories: ['imgs']
 }
 
 let Keymap = {}
@@ -602,7 +635,9 @@ let DefaultKeymap = {
   ArrowRight: 'next',
   ArrowLeft: 'previous',
   s: 'search-image-by-google',
+  G: 'search-image-by-google-unsafe',
   b: 'search-image-by-bing',
+  B: 'search-image-by-bing-unsafe',
   S: 'shuffle',
   k: 'previous-card',
   j: 'next-card',
@@ -625,7 +660,8 @@ let DefaultKeymap = {
   p: 'play-or-stop-audio',
   d: 'search-system-dictionary',
   q: 'quiz-definition',
-  Q: 'quiz-word'
+  Q: 'quiz-word',
+  r: 'rotate-image'
 }
 
 const Commands = {
@@ -659,7 +695,8 @@ const Commands = {
   'scroll-to-top': () => window.scrollTo(0, 0),
   'scroll-to-word-list': () => document.getElementById('words-container').scrollIntoView(),
   'play-or-stop-audio': () => app.playOrStopAudio(),
-  shuffle: () => app.shuffle()
+  shuffle: () => app.shuffle(),
+  'rotate-image': () => app.rotateImage()
 }
 
 function initBodyClick () {
