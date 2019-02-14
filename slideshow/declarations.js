@@ -86,5 +86,5 @@ let DefaultKeymap = {
   d: 'search-system-dictionary',
   q: 'quiz-definition',
   Q: 'quiz-word',
-  r: 'rotate-image'
+  i: 'rotate-image'
 }
