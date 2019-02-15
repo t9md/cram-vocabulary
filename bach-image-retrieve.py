@@ -72,7 +72,7 @@ def main():
     parser = OptionParser(usage=usage)
     parser.add_option("-d", "--dir", dest="dir", help="Directory to write captured images.", default="slideshow/imgs")
     parser.add_option("-w", "--window", dest="window", help="Window size. 1280x720 by default.", default="1280x720")
-    parser.add_option("-e", "--engine", dest="engine", help="Image serch engine to use one of %s" % Engines.keys(), default="google")
+    parser.add_option("-e", "--engine", dest="engine", help="Image search engine to use one of %s" % Engines.keys(), default="google")
     (Options, args) = parser.parse_args()
 
     if Options.engine not in Engines:

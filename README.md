@@ -1,6 +1,10 @@
 # cram-vocabulary
 
+[Quiz モードはこんな感じ(動画)](https://www.youtube.com/watch?v=gRUXP2YlPEY)  
+[このアプリを作った背景、Anki との棲み分けについての僕の考えの Tweet](https://www.youtube.com/watch?v=gRUXP2YlPEY)  
+
 ![](misc/cram-vocabulary.gif)
+
 
 <!-- TOC START min:1 max:3 link:true update:true -->
 - [cram-vocabulary](#cram-vocabulary)
@@ -140,7 +144,10 @@ Options:
   -h, --help            show this help message and exit
   -d DIR, --dir=DIR     Directory to write captured images.
   -w WINDOW, --window=WINDOW
-                        Window
+                        Window size. 1280x720 by default.
+  -e ENGINE, --engine=ENGINE
+                        Image search engine to use one of ['bing', 'google',
+                        'bing_unsafe', 'google_unsafe']
 ```
 
 ### slideshow app
