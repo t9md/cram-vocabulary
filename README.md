@@ -145,8 +145,10 @@ Options:
 
 ### slideshow app
 
-- キーマップを変えられる？ → 変えられる。`slideshow/config.js` を直接編集して下さい。
-- さらに　Chrome のブックマークバーに登録しておけば、ワンクリックでいつでも単語学習が開始できる！
+- 作者は Mac の Google Chrome で動かしています
+- Chrome のブックマークバーに登録しておけば、ワンクリックでいつでも単語学習が開始できる！
+- どんなキーマップがあるの？コマンドは何が利用できるの？設定は？設定の意味は？ → [このファイル見て下さい](https://github.com/t9md/cram-vocabulary/blob/master/slideshow/declarations.js)
+- キーマップを変えられる？ → 変えられる。`slideshow/config.js` を編集して下さい。
 
 - `slideshow/config.js` の `searchSystemDictionary:` ってなに？
   - Dictionary.app でも自動で単語検索してくれる機能。つかうには
@@ -156,8 +158,13 @@ Options:
     - Chrome ブラウザから直接 `dict://{word}` を開けないので、`http` にしている
     - 検索後 Dictionary.app にフォーカスが取られるが、それを Chrome に戻す。
 
-- 音声再生対応している？: 簡易的に対応している。`Config.playAudio = true` とすると `sounds/{word}.wav` を再生する。build-kikutan でこの音声を一括インストールできる。
-- どんなキーマップがあるの？コマンドは何が利用できるの？設定は？設定の意味は？ → [このファイル見て下さい](https://github.com/t9md/cram-vocabulary/blob/master/slideshow/declarations.js)
+- 音声再生対応している？ → している。build-kikutan から音声を一括インストールできる。`app_sounds` task がそれ。タスク実行後に設定のインストラクションでるのでそれをみて設定すれば良い。  
+
+- 例
+```javascript
+Config.playAudio = true
+Config.playAudioFields = [1, 2] // `sounds/${word}-${fieldNo}.wav` 再生する。 word(fieldNo=1), definition(fieldNo=2)
+```
 
 ### Advanced: 上級編
 
