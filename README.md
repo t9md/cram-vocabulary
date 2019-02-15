@@ -2,6 +2,23 @@
 
 ![](misc/cram-vocabulary.gif)
 
+<!-- TOC START min:1 max:3 link:true update:true -->
+- [cram-vocabulary](#cram-vocabulary)
+- [これは何？](#これは何)
+- [おおまかな流れ](#おおまかな流れ)
+  - [環境](#環境)
+  - [前準備](#前準備)
+- [チュートリアル](#チュートリアル)
+  - [1.画像集め](#1画像集め)
+  - [2. 画像を見ながら単語学習](#2-画像を見ながら単語学習)
+  - [3. 補足説明](#3-補足説明)
+    - [`bach-image-retrieve.py`](#bach-image-retrievepy)
+    - [slideshow app](#slideshow-app)
+    - [Advanced: 上級編](#advanced-上級編)
+- [CHANGES](#changes)
+
+<!-- TOC END -->
+
 # これは何？
 
 英単語を大量に覚えたい時、初期の詰め込み学習を助けるツール。  
@@ -140,6 +157,53 @@ Options:
     - 検索後 Dictionary.app にフォーカスが取られるが、それを Chrome に戻す。
 
 - 音声再生対応している？: 簡易的に対応している。`Config.playAudio = true` とすると `sounds/{word}.wav` を再生する。build-kikutan でこの音声を一括インストールできる。
+- どんなキーマップがあるの？コマンドは何が利用できるの？設定は？設定の意味は？ → [このファイル見て下さい](https://github.com/t9md/cram-vocabulary/blob/master/slideshow/declarations.js)
+
+### Advanced: 上級編
+
+#### 複数の画像を表示するには？
+
+画像検索エンジンは、Google 以外にも、Microsoft の Bing もある。  
+Safe サーチ(キツイ画像を隠すか否か)の有効無効によっても見つかる画像が異なる。  
+ここではデフォルトの Google 画像検索に加えて、Bing の画像を表示する技を説明する。  
+
+まず、あなたは以下のコマンドで、画像を保存したはずだ。画像は `slideshow/imgs` に保存される。
+
+```shell
+$ python bach-image-retrieve.py sample-words.txt
+```
+
+Google 画像の結果は概ね満足だが、たまにイマイチなものもあり、Bing のも見たいな、と感じる場面も増えてきた。  
+ちなみに Bing の検索結果は `b`(safe), `B`(unsafe) でそれぞれ見られる。  
+が、毎回のオンデマンドで取得するのではなく、全てかき集めといて一発で表示したい。そうすれば表示の待ち時間も無くなるし。  
+そういう機能がある。以下のコマンドで Bing の結果を `slideshow/imgs_bing` に保存してみよう。  
+
+```shell
+$ python bach-image-retrieve.py -e bing -d slideshow/imgs_bing sample-words.txt
+```
+
+終わったら `config.js` に以下の設定を追加して、`imgs_bing` を画像ディレクトリとして指定しよう。
+
+- `slideshow/config.js`
+
+```javascript
+Config.imageDirectories = ['imgs', 'imgs_bing']
+// Config.rotateAllImageOnNext = false // default true
+```
+
+アプリを使用中に、`i` を押すと、`imgs_bing` に保存された画像に差し替わる。やってみよう。  
+ちなみに、`imgs_bing` を最初に表示したければ、`['imgs_bing', 'imgs']` とすれば良い。  
+また、上のコメントにも書いたが、デフォルトで、 `rotateAllImageOnNext` が `true` になっており、今回のように、画像ディレクトリが複数設定された場合、`next` コマンドの最後の方で、自動的に全部のディレクトリの画像を表示するようになる。  
+これが、「毎回全部見なくていい。必要なときのみでいい」と思うなら、↑コメントを外してこの機能を無効にすることも出来る。  
+
+ちなみに、僕は普段このアプリを Nintendo Switch のコントローラーで操作しており、右手にはコントローラーを持っているので、`i` は押しにくい。なので、以下のように左手で押せる `r` に割り当てている。
+
+
+```javascript
+Keymap = {
+  r: 'rotate-image'
+}
+```
 
 # CHANGES
 
