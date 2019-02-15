@@ -1,7 +1,7 @@
 # cram-vocabulary
 
 [Quiz モードはこんな感じ(動画)](https://www.youtube.com/watch?v=gRUXP2YlPEY)  
-[このアプリを作った背景、Anki との棲み分けについての僕の考えの Tweet](https://www.youtube.com/watch?v=gRUXP2YlPEY)  
+[このアプリを作った背景、Anki との棲み分けについての僕の考えの Tweet](https://twitter.com/t9md/status/1096001284811874304)  
 
 ![](misc/cram-vocabulary.gif)
 
