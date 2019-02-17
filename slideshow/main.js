@@ -8,7 +8,7 @@ function getValidIndex (list, index, allowWrap = false) {
   return validIndex
 }
 
-function unique(list) {
+function unique (list) {
   return list.filter((value, index) => list.indexOf(value) === index)
 }
 
@@ -39,7 +39,7 @@ function shuffleArray (array) {
   return array
 }
 
-function removeItemFromList(list, item) {
+function removeItemFromList (list, item) {
   const index = list.indexOf(item)
   if (index >= 0) {
     return list.splice(index, 1)
@@ -200,6 +200,16 @@ class App {
     else this.audio.pause()
   }
 
+  flashMessage (message) {
+    const element = document.createElement('div')
+    element.innerText = message
+    document.body.appendChild(element)
+    element.classList.add('flush-message')
+    setTimeout(() => {
+      element.remove()
+    }, 1000)
+  }
+
   playAudio (...fieldNumbers) {
     if (!this.initialized) return
 
@@ -244,7 +254,12 @@ class App {
       if (!this.quiz) {
         this.updateFieldVisibility(this.defaultVisible)
       } else {
-        this.updateFieldVisibility({ word: true, definition: false, caption: true, image: false })
+        // quizChoiceField can be one of ['word', 'definition'].
+        if (this.quizChoiceField === 'word') {
+          this.updateFieldVisibility({ word: false, definition: true, caption: true, image: false })
+        } else {
+          this.updateFieldVisibility({ word: true, definition: false, caption: true, image: false })
+        }
         this.quiz.showQuestion(this.index)
       }
     }
@@ -446,10 +461,28 @@ class App {
     }
   }
 
+  markCurrentWord () {
+    if (this.wordList.length) {
+      this.markdedWordList.push(this.getCard())
+      this.flashMessage('Marked')
+      this.renderMarkedWordlist()
+    }
+  }
+
+  clearMarkedWordList () {
+    this.markdedWordList = []
+    this.renderMarkedWordlist()
+  }
+
+  getMarkedWordList () {
+    return this.markdedWordList
+  }
+
   refresh () {
     this.setCard('refresh')
     this.renderActiveWordList()
     this.renderRemovedWordList()
+    this.renderMarkedWordlist()
   }
 
   mutateWordList (callback) {
@@ -487,6 +520,9 @@ class App {
   renderRemovedWordList () {
     this.renderWordList('removed-words', this.getRemovedWordList())
   }
+  renderMarkedWordlist () {
+    this.renderWordList('marked-words', this.markdedWordList)
+  }
 
   searchImage (engine) {
     if (!(engine in ImageSearchEngine)) return
@@ -504,6 +540,7 @@ class App {
       index: -1,
       wordList: [],
       wordListFilename: '',
+      markdedWordList: [],
       removeHistory: [],
       defaultVisible: {
         word: true,
@@ -529,6 +566,12 @@ class App {
   }
 
   updateState (state = {}) {
+    if (state.wordList && state.wordList !== this.getState().wordList) {
+      Object.assign(state, {
+        markdedWordList: [],
+        removeHistory: []
+      })
+    }
     this.setState(Object.assign(this.getState(), state))
   }
 
@@ -537,6 +580,7 @@ class App {
       index: this.index,
       wordList: this.wordList,
       wordListFilename: this.wordListFilename,
+      markdedWordList: this.markdedWordList,
       removeHistory: this.removeHistory,
       defaultVisible: this.defaultVisible,
       quizChoiceField: this.quizChoiceField
@@ -555,8 +599,7 @@ class App {
     this.updateState({
       index: 0,
       wordList: list,
-      wordListFilename: filename,
-      removeHistory: []
+      wordListFilename: filename
     })
   }
 
@@ -620,7 +663,7 @@ class App {
 }
 
 // Main section
-//================================================
+// ===========================================
 const SERVICE_NAME = 't9md/cram-vocabulary'
 let WORD_LIST = ''
 let WORD_LIST_FILE_NAME = 'preloaded-word-list'
@@ -819,6 +862,17 @@ function initDownload () {
   }
   document.getElementById('download-active').addEventListener('click', downloadWordList)
   document.getElementById('download-removed').addEventListener('click', downloadWordList)
+  document.getElementById('download-marked').addEventListener('click', downloadWordList)
+}
+
+function initClickClearMarkedWords () {
+  const element = document.getElementById('clear-marked')
+  element.addEventListener('click', () => app.clearMarkedWordList())
+}
+
+function initClickResetApp () {
+  const element = document.getElementById('reset-app')
+  element.addEventListener('click', () => app.setState({}))
 }
 
 const app = new App()
@@ -827,8 +881,9 @@ window.onload = () => {
   Config = Object.assign({}, DefaultConfig, Config)
   Keymap = Object.assign({}, DefaultKeymap, Keymap)
 
-  document.getElementById('reset-app').addEventListener('click', () => app.setState({}))
   app.init()
+  initClickResetApp()
+  initClickClearMarkedWords()
   initBodyClick()
   initTouchEvent()
   initFieldClick()
@@ -838,6 +893,7 @@ window.onload = () => {
   initDoubleClickOfTextArea()
   initHelp()
   initDownload()
+
   if (WORD_LIST) {
     app.loadWordList(WORD_LIST, WORD_LIST_FILE_NAME)
   }

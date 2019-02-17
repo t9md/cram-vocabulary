@@ -82,7 +82,6 @@ a:hover {
   color: red;
 }
 
-
 #file-area {
   width: 100%;
 }
@@ -127,6 +126,35 @@ a:hover {
 #removed-words {
   width: 60%;
   height: 300px;
+}
+
+#marked-words {
+  width: 60%;
+  height: 150px;
+}
+
+@keyframes flash-message {
+  0% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.flush-message {
+  position: fixed;
+  top: 5px;
+  left: 5px;
+  padding: 10px 10px;
+  color: yellow;
+  background-color: black;
+  border-radius: 5px;
+  font-size: 30px;
+  animation-name: flash-message;
+  animation-duration: 1.0s;
+  animation-fill-mode: forwards;
+  animation-iteration-count: 1;
 }
 
 .noselect {
