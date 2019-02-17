@@ -8,6 +8,10 @@ function getValidIndex (list, index, allowWrap = false) {
   return validIndex
 }
 
+function unique(list) {
+  return list.filter((value, index) => list.indexOf(value) === index)
+}
+
 function styleForId (id) {
   return document.getElementById(id).style
 }
@@ -33,6 +37,13 @@ function shuffleArray (array) {
     array[randomIndex] = temporaryValue
   }
   return array
+}
+
+function removeItemFromList(list, item) {
+  const index = list.indexOf(item)
+  if (index >= 0) {
+    return list.splice(index, 1)
+  }
 }
 
 function getRandom (array, count) {
@@ -70,15 +81,13 @@ class Quiz {
     document.getElementById('definition').classList.remove('quiz')
   }
 
-  invalidatCache () {
-    this.allChoices = null
-  }
-
   getAllChoices () {
     if (!this.allChoices) {
       // Use both active and removed wordlist as quiz choice for better variation.
-      const words = app.wordList.concat(app.getRemovedWordList())
-      this.allChoices = words.map(item => item[this.quizChoiceField])
+      // Plus, item might be duplicated, so here we need to uniquify the list.
+      const items = app.wordList.concat(app.getRemovedWordList())
+      const allChoices = items.map(item => item[this.quizChoiceField])
+      this.allChoices = unique(allChoices)
     }
     return this.allChoices.slice()
   }
@@ -86,8 +95,9 @@ class Quiz {
   buildQuiz (cardIndex) {
     let choices = this.getAllChoices()
 
-    // pluck answer from all choices.
-    const answer = choices.splice(cardIndex, 1)[0]
+    // Pluck answer from all choices.
+    const answer = app.getCard()[this.quizChoiceField]
+    removeItemFromList(choices, answer)
 
     // Pick 3 randomized choices.
     choices = getRandom(choices, this.choiceCount - 1)
@@ -444,7 +454,6 @@ class App {
 
   mutateWordList (callback) {
     callback()
-    if (this.quiz) this.quiz.invalidatCache()
     this.refresh()
   }
 
@@ -480,7 +489,6 @@ class App {
   }
 
   searchImage (engine) {
-    console.log(engine)
     if (!(engine in ImageSearchEngine)) return
 
     const card = this.getCard()
