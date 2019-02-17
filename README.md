@@ -19,7 +19,7 @@
     - [`bach-image-retrieve.py`](#bach-image-retrievepy)
     - [slideshow app](#slideshow-app)
     - [Advanced: 上級編](#advanced-上級編)
-- [CHANGES](#changes)
+- [作者(t9md) の設定](#作者t9md-の設定)
 
 <!-- TOC END -->
 
@@ -219,13 +219,43 @@ Keymap = {
 }
 ```
 
-# CHANGES
+# 作者(t9md) の設定
 
-- vX.X: `Config.playAudio = true` とすれば `sounds/{word}.wav` を再生する。build-kikutan との連携用途
-- vX.X: しばらくここにかくの忘れていたので色々抜けている。
-- v4.0: ユーザーの単語リストを永続化させた。毎回ドロップする必要が無くなったので、`config.js` で `WORD_LIST` 経由で設定する方法を廃止。
-- v3.1: `toggle-image`(デフォルトキーマップ `i`) で、イメージ画像の表示設定を切り替える。
-- v3.0: `UserKeymap` と `DefaultKeymap` を分けた。`UserKeymap` は `DefaultKeymap`  に対する追加として扱われる
-- v2.0: `search-image-now` コマンド追加。 `s` にキーマップ
-- v1.1: スタイルをちょっと変更
-- v1.0: 最初の公開
+- 2019.02.18 現在、ALC-SVL12000 のボキャビルに取り組んでいる。  
+- 以下が設定ファイル: `config.js`。 filter の部分のみ詳細に説明した。
+
+```javascript
+Config = {
+  searchSystemDictionary: false, // macOS only
+  playAudio: true,
+  playAudioFields: [1, 2],
+  // quizChoiceCount: 4,
+  quizAutoDeleteCorrectCard: true,
+  imageDirectories: ['imgs', 'imgs_bing'],
+  rotateAllImageOnNext: false,
+  quizChoiceTextFilter: {
+    // ↓ 単語の意味を "<br>" または "、" で分割し、最初のフィールドを選択肢にしている。
+    //   長いとヒントが豊富になって簡単になってしまうのと、読むのに時間かけるとサクサクこなせないので。
+    //   例: "【副】反対に、逆に、対照的に、逆に言えば" を "【副】反対に" にして選択肢に出す。
+    definition: content => {
+      content = content.split('<br>')[0].split('、')[0]
+      // ↓ は半角、または全角カッコの中に半角文字が含まれてたらまるごとカッコを削除している。
+      // scripture という単語の選択肢で、"【名】（通常 the Scripture で）聖書" と選択肢に出てしまうと
+      // 答えが分かってしまう。これのカッコをまるごと消して、"【名】聖書" として選択肢に出している。
+      const regex = new RegExp("[（(][^)）]*?\\w+[^)）]*?[)）]", 'g')
+      return content.replace(regex, '')
+    }
+  }
+}
+
+Keymap = {
+  t: 'toggle-caption-once',
+  r: 'rotate-image'
+}
+```
+
+- パソコンは Mac. 操作は殆ど Nintendo Switch の右コントローラー でやっている。
+  - [これ](https://qiita.com/lovee/items/06e168d691d623503c15) を参考にした。
+  - 設定は以下の用にしている。右手で持って、親指で quiz の選択肢を選び、右人差し指で next を押している。十字キーは最初設定していたが、誤操作が頻発するのであえて何も設定しsないことにした。
+
+![](misc/switch-controller.png)
