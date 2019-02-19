@@ -310,7 +310,8 @@ class App {
     } else {
       index = 0
     }
-    return `url('${Config.imageDirectories[index]}/${word}.png')`
+    const singleQuoteEscapedWord = word.replace("'", "\\'")
+    return `url('${Config.imageDirectories[index]}/${singleQuoteEscapedWord}.png')`
   }
 
   getCurrentImageIndex () {
