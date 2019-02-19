@@ -8,6 +8,18 @@ function getValidIndex (list, index, allowWrap = false) {
   return validIndex
 }
 
+function replaceWithNewline (text, targetChar) {
+  let nestLevel = 0
+  return Array.from(text)
+    .map(char => {
+      if (char === '(') ++nestLevel
+      else if (char === ')') --nestLevel
+
+      return nestLevel === 0 && char === targetChar ? '\n' : char
+    })
+    .join('')
+}
+
 function unique (list) {
   return list.filter((value, index) => list.indexOf(value) === index)
 }
@@ -250,7 +262,7 @@ class App {
       this.updateFieldVisibility({ word: true, definition: true, caption: true, image: false })
     } else {
       document.getElementById('word').innerHTML = '<tt>' + word + '</tt>'
-      document.getElementById('definition').innerText = definition.replace(/<br>|;/g, '\n')
+      document.getElementById('definition').innerText = replaceWithNewline(definition, ';').replace(/<br>/g, '\n')
       if (!this.quiz) {
         this.updateFieldVisibility(this.defaultVisible)
       } else {
