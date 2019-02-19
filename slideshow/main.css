@@ -152,7 +152,7 @@ a:hover {
   border-radius: 5px;
   font-size: 30px;
   animation-name: flash-message;
-  animation-duration: 1.0s;
+  animation-duration: 1.5s;
   animation-fill-mode: forwards;
   animation-iteration-count: 1;
 }
