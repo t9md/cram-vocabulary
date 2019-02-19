@@ -338,7 +338,10 @@ class App {
           styleForId(field).display = value ? 'block' : 'none'
           break
         default:
-          styleForId(field).visibility = value ? '' : 'hidden'
+          const element = document.getElementById(field)
+          if (element) {
+            element.style.visibility = value ? '' : 'hidden'
+          }
       }
     }
 
