@@ -250,7 +250,7 @@ class App {
       this.updateFieldVisibility({ word: true, definition: true, caption: true, image: false })
     } else {
       document.getElementById('word').innerHTML = '<tt>' + word + '</tt>'
-      document.getElementById('definition').innerText = definition.replace(/<br>/g, '\n')
+      document.getElementById('definition').innerText = definition.replace(/<br>|;/g, '\n')
       if (!this.quiz) {
         this.updateFieldVisibility(this.defaultVisible)
       } else {

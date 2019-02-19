@@ -1,11 +1,11 @@
 // Config
-//================================================
+// ================================================
 let Config = {}
 const DefaultConfig = {
   searchSystemDictionary: false, // Auto open macOS system directory.
   playAudio: false,
   playAudioFields: [1], // For which nth fields play audio.
-  quizChoiceCount: 4,   // Number of choices shown in quiz.
+  quizChoiceCount: 4, // Number of choices shown in quiz.
   quizChoiceTextFilter: {}, // [Advanced] Filter function to modify quiz choice text.
   quizAutoDeleteCorrectCard: false,
   allowWrap: false, // When wordlist reached end, it auto wrap to first word.
@@ -15,7 +15,7 @@ const DefaultConfig = {
 }
 
 // Commands
-//================================================
+// ===============================================
 const Commands = {
   'answer-quiz-1': () => app.answerQuiz(1),
   'answer-quiz-2': () => app.answerQuiz(2),
@@ -53,7 +53,7 @@ const Commands = {
 }
 
 // Keymap
-//================================================
+// ===============================================
 let Keymap = {}
 let DefaultKeymap = {
   '0': 'first-card',
@@ -70,6 +70,7 @@ let DefaultKeymap = {
   k: 'previous-card',
   j: 'next-card',
   n: 'next',
+  p: 'previous',
   'Control-1': 'toggle-word',
   'Control-2': 'toggle-definition',
   'Control-t': 'toggle-caption',
@@ -85,7 +86,7 @@ let DefaultKeymap = {
   Enter: 'next',
   // Backspace: 'delete-current-word',
   '?': 'show-help',
-  p: 'play-or-stop-audio',
+  s: 'play-or-stop-audio',
   d: 'search-system-dictionary',
   q: 'quiz-definition',
   Q: 'quiz-word',
