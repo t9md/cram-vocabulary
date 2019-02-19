@@ -135,6 +135,9 @@ a:hover {
 
 @keyframes flash-message {
   0% {
+    opacity: 0;
+  }
+  20% {
     opacity: 0.7;
   }
   100% {
@@ -152,7 +155,7 @@ a:hover {
   border-radius: 5px;
   font-size: 30px;
   animation-name: flash-message;
-  animation-duration: 1.5s;
+  animation-duration: 1.2s;
   animation-fill-mode: forwards;
   animation-iteration-count: 1;
 }

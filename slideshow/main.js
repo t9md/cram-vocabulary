@@ -207,7 +207,7 @@ class App {
     element.classList.add('flush-message')
     setTimeout(() => {
       element.remove()
-    }, 1500)
+    }, 1200)
   }
 
   playAudio (...fieldNumbers) {
