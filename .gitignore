@@ -3,7 +3,7 @@
 **/*.mp4
 **/*.wav
 **/*.png
-!misc
+!misc/*.png
 src/*
 icloud-app
 node_modules
