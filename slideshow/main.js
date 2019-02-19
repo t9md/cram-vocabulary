@@ -634,6 +634,7 @@ class App {
     // Disable unnecessary feature to not disturb screen capture for movie by Selenium.
     this.defaultVisible = { word: true, definition: true, caption: true, image: true }
     Config = DefaultConfig
+    Config.hideCaptionOnEndOfNext = false
   }
 
   toggleQuizMode (quizChoiceField) {
