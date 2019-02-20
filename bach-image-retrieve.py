@@ -20,7 +20,7 @@ def mkdir_p(path):
             raise
 
 def get_filename(text):
-    if re.search('\W', text):
+    if re.search('[^\w\.\-_]', text):
         return base64.b64encode(text.encode('utf-8'))
     else:
         return text

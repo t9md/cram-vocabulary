@@ -175,7 +175,7 @@ const ImageSearchEngine = {
 }
 
 function getFilename (text) {
-  if (/\W/.test(text)) {
+  if (/[^\w\.\-_]/.test(text)) {
     return btoa(
       encodeURIComponent(text).replace(/%([0-9A-F]{2})/g, function toSolidBytes (match, p1) {
         return String.fromCharCode('0x' + p1)
@@ -330,7 +330,7 @@ class App {
     if (!current) {
       return null
     }
-    const regex = new RegExp(`url\\("(.*)/${this.getCard().word}.png"\\)`)
+    const regex = new RegExp(`url\\("(.*)/${getFilename(this.getCard().word)}.png"\\)`)
     const match = current.match(regex)
     const currentDir = match[1]
     return Config.imageDirectories.indexOf(currentDir)
