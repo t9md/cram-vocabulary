@@ -7,6 +7,8 @@ from selenium.webdriver.common.action_chains import ActionChains
 import time
 import errno
 from optparse import OptionParser
+import re
+import base64
 
 def mkdir_p(path):
     try:
@@ -17,8 +19,14 @@ def mkdir_p(path):
         else:
             raise
 
+def get_filename(text):
+    if re.search('\W', text):
+        return base64.b64encode(text.encode('utf-8'))
+    else:
+        return text
+
 def save_snapshot(driver, word, idx):
-    fname = os.path.join(Options.dir, "%s.png" % word)
+    fname = os.path.join(Options.dir, "%s.png" % get_filename(word))
     idx = "%03d" % (idx + 1)
 
     if os.path.isfile(fname):

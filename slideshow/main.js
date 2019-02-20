@@ -174,6 +174,18 @@ const ImageSearchEngine = {
   bing_unsafe: 'https://www.bing.com/images/search?safeSearch=Off&mkt=en-US&q=%s'
 }
 
+function getFilename (text) {
+  if (/\W/.test(text)) {
+    return btoa(
+      encodeURIComponent(text).replace(/%([0-9A-F]{2})/g, function toSolidBytes (match, p1) {
+        return String.fromCharCode('0x' + p1)
+      })
+    )
+  } else {
+    return text
+  }
+}
+
 class App {
   constructor () {
     // [BUG] Audio.play() result in exception when it is called with no user interaction after window.load
@@ -248,7 +260,7 @@ class App {
   }
 
   getAudioFile (word, fieldNo) {
-    return `sounds/${word}-${fieldNo}.wav`
+    return `sounds/${getFilename(word)}-${fieldNo}.wav`
   }
 
   setCard (where) {
@@ -310,8 +322,7 @@ class App {
     } else {
       index = 0
     }
-    const singleQuoteEscapedWord = word.replace("'", "\\'")
-    return `url('${Config.imageDirectories[index]}/${singleQuoteEscapedWord}.png')`
+    return `url('${Config.imageDirectories[index]}/${getFilename(word)}.png')`
   }
 
   getCurrentImageIndex () {
