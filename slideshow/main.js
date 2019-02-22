@@ -175,15 +175,7 @@ const ImageSearchEngine = {
 }
 
 function getFilename (text) {
-  if (/[^\w\.\-_]/.test(text)) {
-    return btoa(
-      encodeURIComponent(text).replace(/%([0-9A-F]{2})/g, function toSolidBytes (match, p1) {
-        return String.fromCharCode('0x' + p1)
-      })
-    )
-  } else {
-    return text
-  }
+  return /[^\w\.\-_]/.test(text) ? sha256(text) : text
 }
 
 class App {

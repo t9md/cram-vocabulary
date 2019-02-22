@@ -8,7 +8,7 @@ import time
 import errno
 from optparse import OptionParser
 import re
-import base64
+import hashlib
 
 def mkdir_p(path):
     try:
@@ -21,7 +21,7 @@ def mkdir_p(path):
 
 def get_filename(text):
     if re.search('[^\w\.\-_]', text):
-        return base64.b64encode(text.encode('utf-8'))
+        return hashlib.sha256(text.encode('utf-8')).hexdigest()
     else:
         return text
 
