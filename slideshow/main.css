@@ -10,17 +10,6 @@ body {
   margin: 0px;
 }
 
-a {
-  text-decoration: none;
-}
-a:link,
-a:visited {
-  color: black;
-}
-a:hover {
-  color: black;
-}
-
 #image-search {
   display: none;
 }
@@ -158,6 +147,33 @@ a:hover {
   animation-duration: 1.2s;
   animation-fill-mode: forwards;
   animation-iteration-count: 1;
+}
+
+a {
+  text-decoration: none;
+}
+a:link,
+a:visited {
+  color: white;
+}
+a:hover {
+  color: white;
+}
+
+.button {
+  border-radius: 10px;
+  border: 2px solid;
+  border-color: white;
+  font-size: 1.2em;
+  display: inline-block;
+  cursor: pointer;
+  color: white;
+  background-color: grey;
+  padding: 2px 10px;
+  text-decoration: none;
+}
+.button:hover {
+  border-color: grey;
 }
 
 .noselect {

@@ -121,9 +121,11 @@ class Quiz {
     return { choices: choices, answerIndex: answerIndex }
   }
 
-  showQuestion (cardIndex) {
+  showQuestion (cardIndex, skipBuildQuiz = false) {
     this.answered = false
-    this.currentQuiz = this.buildQuiz(cardIndex)
+    if (!skipBuildQuiz) {
+      this.currentQuiz = this.buildQuiz(cardIndex)
+    }
     this.renderElements()
   }
 
@@ -255,7 +257,7 @@ class App {
     return `sounds/${getFilename(word)}-${fieldNo}.wav`
   }
 
-  setCard (where) {
+  setCard (where, options = {}) {
     this.index = this.getCardIndexFor(where)
     const { word = '', definition = '' } = this.getCard()
     this.updateFieldVisibility({ caption: false, word: false, definition: false, image: false })
@@ -276,7 +278,7 @@ class App {
         } else {
           this.updateFieldVisibility({ word: true, definition: false, caption: true, image: false })
         }
-        this.quiz.showQuestion(this.index)
+        this.quiz.showQuestion(this.index, options.skipBuildQuiz)
       }
     }
 
@@ -451,7 +453,7 @@ class App {
 
   previous () {
     if (this.cardProceeded) {
-      this.setCard('refresh')
+      this.setCard('refresh', { skipBuildQuiz: true })
     } else {
       app.setCard('previous')
     }
@@ -491,6 +493,11 @@ class App {
   clearMarkedWordList () {
     this.markdedWordList = []
     this.renderMarkedWordlist()
+  }
+
+  appendMarkedToActive () {
+    this.wordList.push(...this.markdedWordList)
+    this.refresh()
   }
 
   getMarkedWordList () {
@@ -895,6 +902,11 @@ function initClickResetApp () {
   element.addEventListener('click', () => app.setState({}))
 }
 
+function initClickAppendMarkedToActive () {
+  const element = document.getElementById('append-marked-to-active')
+  element.addEventListener('click', () => app.appendMarkedToActive())
+}
+
 const app = new App()
 
 window.onload = () => {
@@ -903,6 +915,7 @@ window.onload = () => {
 
   app.init()
   initClickResetApp()
+  initClickAppendMarkedToActive()
   initClickClearMarkedWords()
   initBodyClick()
   initTouchEvent()
