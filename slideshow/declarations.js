@@ -48,6 +48,8 @@ const Commands = {
   'scroll-to-top': () => window.scrollTo(0, 0),
   'scroll-to-word-list': () => document.getElementById('words-container').scrollIntoView(),
   'play-or-stop-audio': () => app.playOrStopAudio(),
+  'play-audio-word': () => app.playAudio(1),
+  'play-audio-definition': () => app.playAudio(2),
   shuffle: () => app.shuffle(),
   'rotate-image': () => app.rotateImage()
 }
