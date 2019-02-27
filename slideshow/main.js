@@ -267,7 +267,7 @@ class App {
       document.getElementById('definition').innerHTML = '&#8595; Scroll down and drop your file.'
       this.updateFieldVisibility({ word: true, definition: true, caption: true, image: false })
     } else {
-      document.getElementById('word').innerHTML = '<tt>' + word + '</tt>'
+      document.getElementById('word').innerHTML = word
       document.getElementById('definition').innerText = replaceWithNewline(definition, ';').replace(/<br>/g, '\n')
       if (!this.quiz) {
         this.updateFieldVisibility(this.defaultVisible)
