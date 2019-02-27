@@ -391,11 +391,11 @@ class App {
   // for caption, word, definition
   isVisible (id) {
     const element = document.getElementById(id)
+    const captionIsVisible = document.getElementById('caption').style.display !== 'none'
     if (id === 'caption') {
-      return element.style.display !== 'none'
+      return captionIsVisible
     } else {
-      // Check parent's(= caption) visibility and element's itself.
-      return element.offsetParent !== null && element.style.visibility !== 'hidden'
+      return captionIsVisible && element.style.visibility !== 'hidden'
     }
   }
 

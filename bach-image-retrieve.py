@@ -1,6 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import sys
+
+# START: Frawned approach to change default encoding
+# But I intentionally take this approach since it's easy and believe it non-problematic in this limited program.
+# See discussion detail here.
+# https://stackoverflow.com/questions/3828723/why-should-we-not-use-sys-setdefaultencodingutf-8-in-a-py-script
+reload(sys)
+sys.setdefaultencoding('UTF8')
+# END: Frawned approach to change default encoding
+
 import os
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
