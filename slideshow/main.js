@@ -228,8 +228,17 @@ class App {
     }, 1200)
   }
 
-  playAudio (...fieldNumbers) {
+  playAudio (fieldNumbers, speed = 'normal') {
     if (!this.initialized) return
+    if (!this.rateByFieldIndex) {
+      const rateForWord = Config.audioPlaybackRateForWord
+      const rateForDefinition = Config.audioPlaybackRateForDefinition
+      this.rateByFieldIndex = {
+        normal: [rateForWord.normal, rateForDefinition.normal],
+        slow: [rateForWord.slow, rateForDefinition.slow],
+        fast: [rateForWord.fast, rateForDefinition.fast]
+      }
+    }
 
     // Stop previous sound before playing new one.
     if (this.audio) {
@@ -241,16 +250,25 @@ class App {
     const word = this.getCard().word
     if (!word) return
 
-    const audioFiles = fieldNumbers.map(n => this.getAudioFile(word, n)).filter(v => v)
+    const playList = []
+    for (const n of fieldNumbers) {
+      const audioFile = this.getAudioFile(word, n)
+      if (audioFile) {
+        const rate = this.rateByFieldIndex[speed][n - 1]
+        playList.push([audioFile, rate])
+      }
+    }
 
-    const playAudios = files => {
-      if (files.length) {
-        this.audio = new Audio(files.shift())
-        this.audio.onended = () => playAudios(files)
+    const playAudios = playList => {
+      if (playList.length) {
+        const [file, rate] = playList.shift()
+        this.audio = new Audio(file)
+        this.audio.playbackRate = rate
+        this.audio.onended = () => playAudios(playList)
         this.audio.play()
       }
     }
-    playAudios(audioFiles)
+    playAudios(playList)
   }
 
   getAudioFile (word, fieldNo) {
@@ -295,7 +313,7 @@ class App {
     if (!this.quiz) return
     this.quiz.showAnswer(choice)
     if (Config.playAudio) {
-      this.playAudio(this.quizChoiceField === 'word' ? 1 : 2)
+      this.playAudio(this.quizChoiceField === 'word' ? [1] : [2])
     }
     this.next(true)
   }
@@ -364,7 +382,7 @@ class App {
 
       audioFields = audioFields.filter(v => Config.playAudioFields.includes(v))
       if (audioFields.length) {
-        this.playAudio(...audioFields)
+        this.playAudio(audioFields)
       }
     }
   }
@@ -857,7 +875,7 @@ function initFieldClick (element) {
       app.answerQuiz(Number(match[1]))
     } else {
       const fieldNo = wordElement.contains(event.target) ? 1 : 2
-      app.playAudio(fieldNo)
+      app.playAudio([fieldNo])
     }
   }
 
@@ -911,6 +929,14 @@ const app = new App()
 
 window.onload = () => {
   Config = Object.assign({}, DefaultConfig, Config)
+  Config.audioPlaybackRateForWord = Object.assign(
+    DefaultConfig.audioPlaybackRateForWord,
+    Config.audioPlaybackRateForWord
+  )
+  Config.audioPlaybackRateForDefinition = Object.assign(
+    DefaultConfig.audioPlaybackRateForDefinition,
+    Config.audioPlaybackRateForDefinition
+  )
   Keymap = Object.assign({}, DefaultKeymap, Keymap)
 
   app.init()

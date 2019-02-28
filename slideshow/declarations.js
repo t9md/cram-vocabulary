@@ -5,6 +5,8 @@ const DefaultConfig = {
   searchSystemDictionary: false, // Auto open macOS system directory.
   playAudio: false,
   playAudioFields: [1], // For which nth fields play audio.
+  audioPlaybackRateForWord: { slow: 0.8, normal: 1.0, fast: 1.2 },
+  audioPlaybackRateForDefinition: { slow: 0.8, normal: 1.0, fast: 1.2 },
   quizChoiceCount: 4, // Number of choices shown in quiz.
   quizChoiceTextFilter: {}, // [Advanced] Filter function to modify quiz choice text.
   quizAutoDeleteCorrectCard: false,
@@ -48,8 +50,12 @@ const Commands = {
   'scroll-to-top': () => window.scrollTo(0, 0),
   'scroll-to-word-list': () => document.getElementById('words-container').scrollIntoView(),
   'play-or-stop-audio': () => app.playOrStopAudio(),
-  'play-audio-word': () => app.playAudio(1),
-  'play-audio-definition': () => app.playAudio(2),
+  'play-audio-word': () => app.playAudio([1]),
+  'play-audio-definition': () => app.playAudio([2]),
+  'play-audio-word-slow': () => app.playAudio([1], 'slow'),
+  'play-audio-definition-slow': () => app.playAudio([2], 'slow'),
+  'play-audio-word-fast': () => app.playAudio([1], 'fast'),
+  'play-audio-definition-fast': () => app.playAudio([2], 'fast'),
   shuffle: () => app.shuffle(),
   'rotate-image': () => app.rotateImage()
 }
