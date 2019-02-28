@@ -98,6 +98,7 @@ def main():
 
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--hide-scrollbars')
     driver = webdriver.Chrome(options=chrome_options)
 
     (screen_width, screen_height) = Options.window.split("x")
