@@ -1,5 +1,28 @@
 /* You can put your custom style here */
 /* ここで好きなスタイルを設定してもOKです。 */
 
-/* #word { font-family: 'Ricty'; } */
-/* #definition { font-family: 'Ricty'; } */
+/* SVS */
+#word {
+  border-radius: 0px;
+  font-family: 'Ricty Discord';
+  font-size: 4em;
+  top: 10%;
+  left: 0%;
+  position: fixed;
+  text-align: left;
+  min-width: 97%;
+  max-width: 97%;
+}
+
+#definition {
+  font-family: 'Ricty Discord';
+  font-size: 3em;
+  position: fixed;
+  text-align: left;
+  bottom: 5%;
+  left: 0%;
+  background-color: inherit;
+  color: inherit;
+  min-width: 97%;
+  max-width: 97%;
+}

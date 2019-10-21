@@ -1,3 +1,40 @@
+Config = {
+  searchSystemDictionary: false, // macOS only
+  playAudio: true,
+  playAudioFields: [2],
+  // quizChoiceCount: 4,
+  // audioPlaybackRateForWord: { slow: 1.0, normal: 0.8, fast: 1.0 },
+  // audioPlaybackRateForDefinition: { slow: 1.0, nomral: 0.8, fast: 1.0 },
+  quizAutoDeleteCorrectCard: true,
+  imageDirectories: ['imgs', 'imgs_bing'],
+  rotateAllImageOnNext: false,
+  hideCaptionOnEndOfNext: false,
+  quizChoiceTextFilter: {
+    definition: content => {
+      const regex = new RegExp('[（(][^)）]*?\\w+[^)）]*?[)）]', 'g')
+      return content
+        .replace(/\([^)]+?\)/g, '') // (...) を思い切って丸ごと消す！
+        .replace(/《[^》]+?》/g, '') // 《...》を丸ごと消す
+        .replace(/〈[^〉]+?〉/g, '') // 〈...〉を丸ごと消す
+        .replace(/\[[^\]]+?\]/g, '') // [...] を丸ごと消す
+        .replace(regex, '')
+        .split(/<br>|、|,|;| \/ /)[0]
+    }
+  }
+}
+
+Keymap = {
+  t: 'toggle-caption-once',
+  // '2': 'toggle-caption-once',
+  r: 'rotate-image',
+  s: 'play-audio-word',
+  ';': 'play-audio-word',
+  w: 'play-audio-word-slow',
+  f: 'play-audio-word-fast',
+  ' ': 'play-audio-word'
+}
+
+/// ///////////////////////////////////////////////////////////// Original
 // Configuration
 // ===================
 // See following file for full list of available Config, Keymap, Command and also to get idea of how to configure it.
