@@ -1,7 +1,7 @@
 Config = {
   searchSystemDictionary: false, // macOS only
-  playAudio: true,
-  playAudioFields: [2],
+  playAudio: false,
+  playAudioFields: [1, 2],
   // quizChoiceCount: 4,
   // audioPlaybackRateForWord: { slow: 1.0, normal: 0.8, fast: 1.0 },
   // audioPlaybackRateForDefinition: { slow: 1.0, nomral: 0.8, fast: 1.0 },

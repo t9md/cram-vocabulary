@@ -1,8 +1,9 @@
 /* You can put your custom style here */
 /* ここで好きなスタイルを設定してもOKです。 */
 
-/* SVS */
-#word {
+/* Sample to show word at top left and definition at bottom left */
+/* This style is best fit to show cram sentence and translation */
+/* #word {
   border-radius: 0px;
   font-family: 'Ricty Discord';
   font-size: 4em;
@@ -25,4 +26,4 @@
   color: inherit;
   min-width: 97%;
   max-width: 97%;
-}
+} */
