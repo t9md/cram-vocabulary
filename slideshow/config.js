@@ -7,6 +7,8 @@ Config = {
   // audioPlaybackRateForDefinition: { slow: 1.0, nomral: 0.8, fast: 1.0 },
   quizAutoDeleteCorrectCard: true,
   imageDirectories: ['imgs', 'imgs_bing'],
+  imageExtension: 'png',
+  // imageExtension: 'jpg',
   rotateAllImageOnNext: false,
   hideCaptionOnEndOfNext: false,
   quizChoiceTextFilter: {

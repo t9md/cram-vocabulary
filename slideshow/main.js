@@ -334,7 +334,7 @@ class App {
     } else {
       index = 0
     }
-    return `url('${Config.imageDirectories[index]}/${getFilename(word)}.png')`
+    return `url('${Config.imageDirectories[index]}/${getFilename(word)}.${Config.imageExtension}')`
   }
 
   getCurrentImageIndex () {
@@ -342,7 +342,7 @@ class App {
     if (!current) {
       return null
     }
-    const regex = new RegExp(`url\\("(.*)/${getFilename(this.getCard().word)}.png"\\)`)
+    const regex = new RegExp(`url\\("(.*)/${getFilename(this.getCard().word)}.${Config.imageExtension}"\\)`)
     const match = current.match(regex)
     const currentDir = match[1]
     return Config.imageDirectories.indexOf(currentDir)

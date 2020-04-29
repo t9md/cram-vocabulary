@@ -6,21 +6,20 @@
 ![](misc/cram-vocabulary.gif)
 
 
-<!-- TOC START min:1 max:3 link:true update:true -->
-- [cram-vocabulary](#cram-vocabulary)
-- [これは何？](#これは何)
-- [おおまかな流れ](#おおまかな流れ)
-  - [環境](#環境)
-  - [前準備](#前準備)
-- [チュートリアル](#チュートリアル)
-  - [1.画像集め](#1画像集め)
-  - [2. 画像を見ながら単語学習](#2-画像を見ながら単語学習)
-  - [3. 補足説明](#3-補足説明)
-    - [`bach-image-retrieve.py`](#bach-image-retrievepy)
-    - [slideshow app](#slideshow-app)
-    - [Advanced: 上級編](#advanced-上級編)
-- [作者(t9md) の設定](#作者t9md-の設定)
-
+<!-- TOC START min:1 max:3 link:true asterisk:true update:true -->
+* [cram-vocabulary](#cram-vocabulary)
+* [これは何？](#これは何)
+* [おおまかな流れ](#おおまかな流れ)
+  * [環境](#環境)
+  * [前準備](#前準備)
+* [チュートリアル](#チュートリアル)
+  * [1.画像集め](#1画像集め)
+  * [2. 画像を見ながら単語学習](#2-画像を見ながら単語学習)
+  * [3. 補足説明](#3-補足説明)
+    * [`bach-image-retrieve.py`](#bach-image-retrievepy)
+    * [slideshow app](#slideshow-app)
+    * [Advanced: 上級編](#advanced-上級編)
+* [作者(t9md) の設定](#作者t9md-の設定)
 <!-- TOC END -->
 
 # これは何？
@@ -49,10 +48,10 @@ Intensive な詰め込みを加速させることがを意図しており、Anki
 - Chrome Browser を自動操縦するためのドライバ [Chrome driver](http://chromedriver.chromium.org/downloads) をダウンロードして、 PATH の通ったとこ(`/usr/local/bin` とか)に置く。
 Shell から `chromedriver -h` と打って、help が出たらOK
 
-- python selenium ライブラリ の install
+- python selenium ライブラリ + pillow の install
 
 ```
-pip install selenium
+pip install selenium pillow
 ```
 
 # チュートリアル
